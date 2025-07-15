@@ -6,7 +6,7 @@
 
 ## Mission Objectives
 
-Your goal is to implement all required features based on the provided API documentation and web prototype.
+Your goal is to implement all required features based on the provided API documentation.
 
 ### Core Features
 
@@ -34,7 +34,7 @@ Your goal is to implement all required features based on the provided API docume
 6. **Code Maintainability**
    - Write clear and meaningful code comments, especially for complex logic
    - Follow consistent coding conventions (naming, structure, etc.)
-   - Add any helpful documentation to support understanding of the codebase
+   - Add any helpful documentation to support understanding of the codebase. 
 
 ---
 
