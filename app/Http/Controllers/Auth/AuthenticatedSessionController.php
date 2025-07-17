@@ -28,18 +28,16 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
 
         if ($user->hasRole('admin')) {
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->intended('/admin/dashboard');
         }
-
         if ($user->hasRole('donor')) {
-            return redirect()->intended(route('donor.dashboard'));
+            return redirect()->intended('/donor/dashboard');
         }
-
         if ($user->hasRole('requester')) {
-            return redirect()->intended(route('requester.dashboard'));
+            return redirect()->intended('/requester/dashboard');
         }
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended('/');
     }
 
     /**

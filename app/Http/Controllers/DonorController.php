@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class DonorController extends Controller
 {
     public function index()
     {
-        return view('donor.dashboard');
+        return Inertia::render('donor.dashboard');
     }
 }
