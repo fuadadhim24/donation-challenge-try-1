@@ -227,12 +227,14 @@ onMounted(() => {
                         />
                     </svg>
                 </button>
-                <button
-                    type="button"
-                    class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium text-nowrap rounded-xl border border-transparent bg-blue-400 text-black hover:bg-blue-600 focus:outline-hidden focus:bg-blue-600 transition disabled:opacity-50 disabled:pointer-events-none"
-                >
-                    Sign in
-                </button>
+                <Link :href="route('login')">
+                    <button
+                        type="button"
+                        class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium text-nowrap rounded-xl border border-transparent bg-blue-400 text-black hover:bg-blue-600 focus:outline-hidden focus:bg-blue-600 transition disabled:opacity-50 disabled:pointer-events-none"
+                    >
+                        Sign in
+                    </button>
+                </Link>
 
                 <div class="lg:hidden">
                     <button

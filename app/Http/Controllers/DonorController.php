@@ -9,6 +9,6 @@ class DonorController extends Controller
 {
     public function index()
     {
-        return Inertia::render('donor.dashboard');
+        return Inertia::render('donor/dashboard');
     }
 }
