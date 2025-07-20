@@ -16,7 +16,11 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
         $user = $request->user();
-        if (!$user || !$user->roles()->whereIn('role', $roles)->exists()) {
+        if (
+            !$user ||
+            !$user->role ||
+            !in_array($user->role->role, $roles)
+        ) {
             abort(403, 'Unauthorized');
         }
         return $next($request);

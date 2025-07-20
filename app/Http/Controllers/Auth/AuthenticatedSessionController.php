@@ -30,9 +30,11 @@ class AuthenticatedSessionController extends Controller
         if ($user->hasRole('admin')) {
             return redirect()->intended('/admin/dashboard');
         }
+
         if ($user->hasRole('donor')) {
             return redirect()->intended('/donor/dashboard');
         }
+
         if ($user->hasRole('requester')) {
             return redirect()->intended('/requester/dashboard');
         }

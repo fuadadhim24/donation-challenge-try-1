@@ -46,13 +46,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    public function roles()
+    public function role()
     {
-        return $this->hasMany(UserRole::class);
+        return $this->hasOne(UserRole::class);
     }
 
+    // helper untuk cek role
     public function hasRole($role)
     {
-        return $this->roles()->where('role', $role)->exists();
+        return $this->role && $this->role->role === $role;
     }
 }
