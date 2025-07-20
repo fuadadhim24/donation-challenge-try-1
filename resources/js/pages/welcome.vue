@@ -265,7 +265,7 @@ onMounted(() => {
     <!-- ========== MAIN CONTENT ========== -->
     <main id="content">
         <!-- Hero -->
-        <div class="px-4 sm:px-6 lg:px-8">
+        <section class="px-4 sm:px-6 lg:px-8">
             <div
                 class="h-120 md:h-[80dvh] flex flex-col bg-[linear-gradient(to_top,rgba(0,0,0,0.7),rgba(0,0,0,0))] bg-[url('img/welcome/hero-bg.jpg')] bg-cover bg-center bg-no-repeat rounded-2xl"
             >
@@ -283,9 +283,9 @@ onMounted(() => {
                     </p>
                 </div>
             </div>
-        </div>
+        </section>
         <!-- End Hero -->
-        <div class="max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-24 mx-auto">
+        <section class="max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-24 mx-auto">
             <div class="mb-6 sm:mb-10 max-w-2xl text-center mx-auto">
                 <p class="mb-6 md:text-lg">
                     Kami percaya, setiap
@@ -306,10 +306,10 @@ onMounted(() => {
                     tepat sasaran.
                 </h2>
             </div>
-        </div>
+        </section>
 
         <!-- Works -->
-        <div class="max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-24 mx-auto">
+        <section class="max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-24 mx-auto">
             <div class="mb-6 sm:mb-10 max-w-2xl text-center mx-auto">
                 <p class="text-sm text-gray-500">Kebaikan mulai dari anda</p>
                 <h1
@@ -600,11 +600,11 @@ onMounted(() => {
                     View all Products
                 </a>
             </div> -->
-        </div>
+        </section>
         <!-- End Works -->
 
         <!-- Testimonials -->
-        <div class="px-4 sm:px-6 lg:px-8">
+        <section class="px-4 sm:px-6 lg:px-8">
             <!-- Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 md:items-center">
                 <div
@@ -663,11 +663,11 @@ onMounted(() => {
                 <!-- End Col -->
             </div>
             <!-- End Grid -->
-        </div>
+        </section>
         <!-- End Testimonials -->
 
         <!-- Contact -->
-        <div class="max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-24 mx-auto">
+        <section class="max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-24 mx-auto">
             <div class="mb-6 sm:mb-10 max-w-2xl text-center mx-auto">
                 <h2
                     class="font-medium text-black text-2xl sm:text-4xl dark:text-white"
@@ -828,7 +828,7 @@ onMounted(() => {
                 </div>
                 <!-- End Col -->
             </div>
-        </div>
+        </section>
         <!-- End Contact -->
     </main>
     <!-- ========== END MAIN CONTENT ========== -->
