@@ -44,7 +44,7 @@ class HandleInertiaRequests extends Middleware
                         'name' => Auth::user()->name,
                         'email' => Auth::user()->email,
                         'role' => Auth::user()->role?->role,
-                        'avatar_url' => Auth::user()->avatar_url ?? '/img/default-avatar.png',
+                        'avatar_url' => Auth::user()->avatar_url ?? 'https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80',
                     ]
                     : null,
             ],

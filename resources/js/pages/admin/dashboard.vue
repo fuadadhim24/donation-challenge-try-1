@@ -2,7 +2,12 @@
 import { Head } from "@inertiajs/vue3";
 import { ref, onMounted } from "vue";
 import { useScriptTag } from "@vueuse/core";
+import { usePage } from "@inertiajs/vue3";
+import { router } from "@inertiajs/vue3";
 
+const page = usePage();
+const authUser = page.props.auth.user ?? null;
+const userRole = authUser ? authUser.role : null;
 const isDark = ref(false);
 function setBodyClass(...classes) {
     document.body.className = "";
@@ -338,6 +343,9 @@ async function initCharts() {
         }
     );
 }
+function logout() {
+    router.post(route("logout"));
+}
 
 const title = "Tailwind CSS Admin Template | Preline UI";
 onMounted(() => {
@@ -373,7 +381,7 @@ onMounted(() => {
         />
     </Head>
 
-    <!-- <div class="space-y-8 p-6">
+    <!-- <div class="p-6 space-y-8">
         <h1 class="text-2xl font-bold">{{ title }}</h1>
         <div ref="multiChart" class="h-80"></div>
         <div ref="singleAreaChart" class="h-80"></div>
@@ -381,16 +389,16 @@ onMounted(() => {
     <header
         class="sticky top-0 inset-x-0 flex flex-wrap md:justify-start md:flex-nowrap z-48 w-full bg-white border-b border-gray-200 text-sm py-2.5 lg:ps-65 dark:bg-neutral-800 dark:border-neutral-700"
     >
-        <nav class="px-4 sm:px-6 flex basis-full items-center w-full mx-auto">
-            <div class="me-5 lg:me-0 lg:hidden flex items-center">
+        <nav class="flex items-center w-full px-4 mx-auto sm:px-6 basis-full">
+            <div class="flex items-center me-5 lg:me-0 lg:hidden">
                 <!-- Logo -->
                 <a
-                    class="flex-none rounded-md text-xl inline-block font-semibold focus:outline-hidden focus:opacity-80"
+                    class="flex-none inline-block text-xl font-semibold rounded-md focus:outline-hidden focus:opacity-80"
                     href="#"
                     aria-label="Preline"
                 >
                     <svg
-                        class="w-28 h-auto"
+                        class="h-auto w-28"
                         width="116"
                         height="32"
                         viewBox="0 0 116 32"
@@ -427,7 +435,7 @@ onMounted(() => {
             </div>
 
             <div
-                class="w-full flex items-center justify-end ms-auto md:justify-between gap-x-1 md:gap-x-3"
+                class="flex items-center justify-end w-full ms-auto md:justify-between gap-x-1 md:gap-x-3"
             >
                 <div class="hidden md:block">
                     <!-- Search Input -->
@@ -436,7 +444,7 @@ onMounted(() => {
                             class="absolute inset-y-0 start-0 flex items-center pointer-events-none z-20 ps-3.5"
                         >
                             <svg
-                                class="shrink-0 size-4 text-gray-400 dark:text-white/60"
+                                class="text-gray-400 shrink-0 size-4 dark:text-white/60"
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24"
                                 height="24"
@@ -453,15 +461,15 @@ onMounted(() => {
                         </div>
                         <input
                             type="text"
-                            class="py-2 ps-10 pe-16 block w-full bg-white border-gray-200 rounded-lg text-sm focus:outline-hidden focus:border-blue-500 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder:text-neutral-400 dark:focus:ring-neutral-600"
+                            class="block w-full py-2 text-sm bg-white border-gray-200 rounded-lg ps-10 pe-16 focus:outline-hidden focus:border-blue-500 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder:text-neutral-400 dark:focus:ring-neutral-600"
                             placeholder="Search"
                         />
                         <div
-                            class="hidden absolute inset-y-0 end-0 flex items-center z-20 pe-1"
+                            class="absolute inset-y-0 z-20 flex items-center hidden end-0 pe-1"
                         >
                             <button
                                 type="button"
-                                class="inline-flex shrink-0 justify-center items-center size-6 rounded-full text-gray-500 hover:text-blue-600 focus:outline-hidden focus:text-blue-600 dark:text-neutral-500 dark:hover:text-blue-500 dark:focus:text-blue-500"
+                                class="inline-flex items-center justify-center text-gray-500 rounded-full shrink-0 size-6 hover:text-blue-600 focus:outline-hidden focus:text-blue-600 dark:text-neutral-500 dark:hover:text-blue-500 dark:focus:text-blue-500"
                                 aria-label="Close"
                             >
                                 <span class="sr-only">Close</span>
@@ -484,10 +492,10 @@ onMounted(() => {
                             </button>
                         </div>
                         <div
-                            class="absolute inset-y-0 end-0 flex items-center pointer-events-none z-20 pe-3 text-gray-400"
+                            class="absolute inset-y-0 z-20 flex items-center text-gray-400 pointer-events-none end-0 pe-3"
                         >
                             <svg
-                                class="shrink-0 size-3 text-gray-400 dark:text-white/60"
+                                class="text-gray-400 shrink-0 size-3 dark:text-white/60"
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24"
                                 height="24"
@@ -504,7 +512,7 @@ onMounted(() => {
                             </svg>
                             <span class="mx-1">
                                 <svg
-                                    class="shrink-0 size-3 text-gray-400 dark:text-white/60"
+                                    class="text-gray-400 shrink-0 size-3 dark:text-white/60"
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
                                     height="24"
@@ -594,72 +602,61 @@ onMounted(() => {
                     </button>
 
                     <!-- Dropdown -->
-                    <div
-                        class="hs-dropdown [--placement:bottom-right] relative inline-flex"
-                    >
+                    <div class="relative inline-flex hs-dropdown">
                         <button
                             id="hs-dropdown-account"
                             type="button"
-                            class="size-9.5 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-gray-800 focus:outline-hidden disabled:opacity-50 disabled:pointer-events-none dark:text-white"
-                            aria-haspopup="menu"
-                            aria-expanded="false"
-                            aria-label="Dropdown"
+                            class="inline-flex items-center justify-center border rounded-full size-9"
                         >
                             <img
-                                class="shrink-0 size-9.5 rounded-full"
-                                src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
+                                class="rounded-full"
+                                :src="authUser.avatar_url"
                                 alt="Avatar"
                             />
                         </button>
 
                         <div
-                            class="hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-60 bg-white shadow-md rounded-lg mt-2 dark:bg-neutral-800 dark:border dark:border-neutral-700 dark:divide-neutral-700 after:h-4 after:absolute after:-bottom-4 after:start-0 after:w-full before:h-4 before:absolute before:-top-4 before:start-0 before:w-full"
-                            role="menu"
-                            aria-orientation="vertical"
+                            class="absolute z-50 hidden mt-2 bg-white rounded-lg shadow-md hs-dropdown-menu min-w-56"
                             aria-labelledby="hs-dropdown-account"
                         >
-                            <div
-                                class="py-3 px-5 bg-gray-100 rounded-t-lg dark:bg-neutral-700"
-                            >
-                                <p
-                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                >
-                                    Signed in as
+                            <div class="px-4 py-3 bg-gray-100 rounded-t-lg">
+                                <p class="text-sm text-gray-500">
+                                    Masuk sebagai
                                 </p>
-                                <p
-                                    class="text-sm font-medium text-gray-800 dark:text-neutral-200"
-                                >
-                                    james@site.com
+                                <p class="text-sm font-medium text-gray-800">
+                                    {{ authUser.email }}
                                 </p>
                             </div>
-                            <div class="p-1.5 space-y-0.5">
-                                <Link
-                                    :href="route('logout')"
-                                    method="post"
-                                    as="button"
-                                    class="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700 dark:focus:text-neutral-300"
+                            <div class="p-2 space-y-1">
+                                <a
+                                    :href="
+                                        userRole != null
+                                            ? `/${userRole}/dashboard`
+                                            : '/login'
+                                    "
+                                    class="block w-full px-4 py-2 text-left text-gray-700 rounded hover:bg-gray-100"
+                                >
+                                    Dashboard
+                                </a>
+                                <button
+                                    @click="logout"
+                                    class="flex items-center w-full gap-2 px-4 py-2 text-left text-red-500 rounded hover:bg-gray-100"
                                 >
                                     <svg
-                                        class="shrink-0 size-4"
                                         xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
+                                        class="size-4"
                                         viewBox="0 0 24 24"
                                         fill="none"
                                         stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
                                     >
                                         <path
-                                            d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+                                            d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"
                                         />
-                                        <path
-                                            d="M10.3 21a1.94 1.94 0 0 0 3.4 0"
-                                        />
+                                        <polyline points="10 17 15 12 10 7" />
+                                        <line x1="15" y1="12" x2="3" y2="12" />
                                     </svg>
                                     Keluar
-                                </Link>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -673,13 +670,13 @@ onMounted(() => {
     <!-- ========== MAIN CONTENT ========== -->
     <!-- Breadcrumb -->
     <div
-        class="sticky top-0 inset-x-0 z-20 bg-white border-y border-gray-200 px-4 sm:px-6 lg:px-8 lg:hidden dark:bg-neutral-800 dark:border-neutral-700"
+        class="sticky inset-x-0 top-0 z-20 px-4 bg-white border-gray-200 border-y sm:px-6 lg:px-8 lg:hidden dark:bg-neutral-800 dark:border-neutral-700"
     >
         <div class="flex items-center py-2">
             <!-- Navigation Toggle -->
             <button
                 type="button"
-                class="size-8 flex justify-center items-center gap-x-2 border border-gray-200 text-gray-800 hover:text-gray-500 rounded-lg focus:outline-hidden focus:text-gray-500 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-neutral-200 dark:hover:text-neutral-500 dark:focus:text-neutral-500"
+                class="flex items-center justify-center text-gray-800 border border-gray-200 rounded-lg size-8 gap-x-2 hover:text-gray-500 focus:outline-hidden focus:text-gray-500 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-neutral-200 dark:hover:text-neutral-500 dark:focus:text-neutral-500"
                 aria-haspopup="dialog"
                 aria-expanded="false"
                 aria-controls="hs-application-sidebar"
@@ -707,7 +704,7 @@ onMounted(() => {
             <!-- End Navigation Toggle -->
 
             <!-- Breadcrumb -->
-            <ol class="ms-3 flex items-center whitespace-nowrap">
+            <ol class="flex items-center ms-3 whitespace-nowrap">
                 <li
                     class="flex items-center text-sm text-gray-800 dark:text-neutral-400"
                 >
@@ -749,15 +746,15 @@ onMounted(() => {
         aria-label="Sidebar"
     >
         <div class="relative flex flex-col h-full max-h-full">
-            <div class="px-6 pt-4 flex items-center">
+            <div class="flex items-center px-6 pt-4">
                 <!-- Logo -->
                 <a
-                    class="flex-none rounded-xl text-xl inline-block font-semibold focus:outline-hidden focus:opacity-80"
+                    class="flex-none inline-block text-xl font-semibold rounded-xl focus:outline-hidden focus:opacity-80"
                     href="#"
                     aria-label="Preline"
                 >
                     <svg
-                        class="w-28 h-auto"
+                        class="h-auto w-28"
                         width="116"
                         height="32"
                         viewBox="0 0 116 32"
@@ -799,7 +796,7 @@ onMounted(() => {
                 class="h-full overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
             >
                 <nav
-                    class="hs-accordion-group p-3 w-full flex flex-col flex-wrap"
+                    class="flex flex-col flex-wrap w-full p-3 hs-accordion-group"
                     data-hs-accordion-always-open
                 >
                     <ul class="flex flex-col space-y-1">
@@ -858,7 +855,7 @@ onMounted(() => {
                                 Users
 
                                 <svg
-                                    class="hs-accordion-active:block ms-auto hidden size-4"
+                                    class="hidden hs-accordion-active:block ms-auto size-4"
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
                                     height="24"
@@ -873,7 +870,7 @@ onMounted(() => {
                                 </svg>
 
                                 <svg
-                                    class="hs-accordion-active:hidden ms-auto block size-4"
+                                    class="block hs-accordion-active:hidden ms-auto size-4"
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
                                     height="24"
@@ -895,7 +892,7 @@ onMounted(() => {
                                 aria-labelledby="users-accordion"
                             >
                                 <ul
-                                    class="hs-accordion-group ps-8 pt-1 space-y-1"
+                                    class="pt-1 space-y-1 hs-accordion-group ps-8"
                                     data-hs-accordion-always-open
                                 >
                                     <li
@@ -911,7 +908,7 @@ onMounted(() => {
                                             Sub Menu 1
 
                                             <svg
-                                                class="hs-accordion-active:block ms-auto hidden size-4"
+                                                class="hidden hs-accordion-active:block ms-auto size-4"
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 width="24"
                                                 height="24"
@@ -926,7 +923,7 @@ onMounted(() => {
                                             </svg>
 
                                             <svg
-                                                class="hs-accordion-active:hidden ms-auto block size-4"
+                                                class="block hs-accordion-active:hidden ms-auto size-4"
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 width="24"
                                                 height="24"
@@ -988,7 +985,7 @@ onMounted(() => {
                                             Sub Menu 2
 
                                             <svg
-                                                class="hs-accordion-active:block ms-auto hidden size-4"
+                                                class="hidden hs-accordion-active:block ms-auto size-4"
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 width="24"
                                                 height="24"
@@ -1003,7 +1000,7 @@ onMounted(() => {
                                             </svg>
 
                                             <svg
-                                                class="hs-accordion-active:hidden ms-auto block size-4"
+                                                class="block hs-accordion-active:hidden ms-auto size-4"
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 width="24"
                                                 height="24"
@@ -1090,7 +1087,7 @@ onMounted(() => {
                                 Account
 
                                 <svg
-                                    class="hs-accordion-active:block ms-auto hidden size-4"
+                                    class="hidden hs-accordion-active:block ms-auto size-4"
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
                                     height="24"
@@ -1105,7 +1102,7 @@ onMounted(() => {
                                 </svg>
 
                                 <svg
-                                    class="hs-accordion-active:hidden ms-auto block size-4"
+                                    class="block hs-accordion-active:hidden ms-auto size-4"
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
                                     height="24"
@@ -1126,7 +1123,7 @@ onMounted(() => {
                                 role="region"
                                 aria-labelledby="account-accordion"
                             >
-                                <ul class="ps-8 pt-1 space-y-1">
+                                <ul class="pt-1 space-y-1 ps-8">
                                     <li>
                                         <a
                                             class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
@@ -1189,7 +1186,7 @@ onMounted(() => {
                                 Projects
 
                                 <svg
-                                    class="hs-accordion-active:block ms-auto hidden size-4"
+                                    class="hidden hs-accordion-active:block ms-auto size-4"
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
                                     height="24"
@@ -1204,7 +1201,7 @@ onMounted(() => {
                                 </svg>
 
                                 <svg
-                                    class="hs-accordion-active:hidden ms-auto block size-4"
+                                    class="block hs-accordion-active:hidden ms-auto size-4"
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
                                     height="24"
@@ -1225,7 +1222,7 @@ onMounted(() => {
                                 role="region"
                                 aria-labelledby="projects-accordion"
                             >
-                                <ul class="ps-8 pt-1 space-y-1">
+                                <ul class="pt-1 space-y-1 ps-8">
                                     <li>
                                         <a
                                             class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
@@ -1329,9 +1326,9 @@ onMounted(() => {
 
     <!-- Content -->
     <div class="w-full lg:ps-64">
-        <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div class="p-4 space-y-4 sm:p-6 sm:space-y-6">
             <!-- Grid -->
-            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6">
                 <!-- Card -->
                 <div
                     class="flex flex-col bg-white border border-gray-200 shadow-2xs rounded-xl dark:bg-neutral-800 dark:border-neutral-700"
@@ -1339,14 +1336,14 @@ onMounted(() => {
                     <div class="p-4 md:p-5">
                         <div class="flex items-center gap-x-2">
                             <p
-                                class="text-xs uppercase text-gray-500 dark:text-neutral-500"
+                                class="text-xs text-gray-500 uppercase dark:text-neutral-500"
                             >
                                 Total users
                             </p>
                             <div class="hs-tooltip">
                                 <div class="hs-tooltip-toggle">
                                     <svg
-                                        class="shrink-0 size-4 text-gray-500 dark:text-neutral-500"
+                                        class="text-gray-500 shrink-0 size-4 dark:text-neutral-500"
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
                                         height="24"
@@ -1364,7 +1361,7 @@ onMounted(() => {
                                         <path d="M12 17h.01" />
                                     </svg>
                                     <span
-                                        class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-gray-900 text-xs font-medium text-white rounded-md shadow-2xs dark:bg-neutral-700"
+                                        class="absolute z-10 invisible inline-block px-2 py-1 text-xs font-medium text-white transition-opacity bg-gray-900 rounded-md opacity-0 hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible shadow-2xs dark:bg-neutral-700"
                                         role="tooltip"
                                     >
                                         The number of daily users
@@ -1373,17 +1370,17 @@ onMounted(() => {
                             </div>
                         </div>
 
-                        <div class="mt-1 flex items-center gap-x-2">
+                        <div class="flex items-center mt-1 gap-x-2">
                             <h3
-                                class="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200"
+                                class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
                             >
                                 72,540
                             </h3>
                             <span
-                                class="flex items-center gap-x-1 text-green-600"
+                                class="flex items-center text-green-600 gap-x-1"
                             >
                                 <svg
-                                    class="inline-block size-4 self-center"
+                                    class="self-center inline-block size-4"
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
                                     height="24"
@@ -1413,15 +1410,15 @@ onMounted(() => {
                     <div class="p-4 md:p-5">
                         <div class="flex items-center gap-x-2">
                             <p
-                                class="text-xs uppercase text-gray-500 dark:text-neutral-500"
+                                class="text-xs text-gray-500 uppercase dark:text-neutral-500"
                             >
                                 Sessions
                             </p>
                         </div>
 
-                        <div class="mt-1 flex items-center gap-x-2">
+                        <div class="flex items-center mt-1 gap-x-2">
                             <h3
-                                class="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200"
+                                class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
                             >
                                 29.4%
                             </h3>
@@ -1437,23 +1434,23 @@ onMounted(() => {
                     <div class="p-4 md:p-5">
                         <div class="flex items-center gap-x-2">
                             <p
-                                class="text-xs uppercase text-gray-500 dark:text-neutral-500"
+                                class="text-xs text-gray-500 uppercase dark:text-neutral-500"
                             >
                                 Avg. Click Rate
                             </p>
                         </div>
 
-                        <div class="mt-1 flex items-center gap-x-2">
+                        <div class="flex items-center mt-1 gap-x-2">
                             <h3
-                                class="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200"
+                                class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
                             >
                                 56.8%
                             </h3>
                             <span
-                                class="flex items-center gap-x-1 text-red-600"
+                                class="flex items-center text-red-600 gap-x-1"
                             >
                                 <svg
-                                    class="inline-block size-4 self-center"
+                                    class="self-center inline-block size-4"
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
                                     height="24"
@@ -1483,15 +1480,15 @@ onMounted(() => {
                     <div class="p-4 md:p-5">
                         <div class="flex items-center gap-x-2">
                             <p
-                                class="text-xs uppercase text-gray-500 dark:text-neutral-500"
+                                class="text-xs text-gray-500 uppercase dark:text-neutral-500"
                             >
                                 Pageviews
                             </p>
                         </div>
 
-                        <div class="mt-1 flex items-center gap-x-2">
+                        <div class="flex items-center mt-1 gap-x-2">
                             <h3
-                                class="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200"
+                                class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
                             >
                                 92,913
                             </h3>
@@ -1502,14 +1499,14 @@ onMounted(() => {
             </div>
             <!-- End Grid -->
 
-            <div class="grid lg:grid-cols-2 gap-4 sm:gap-6">
+            <div class="grid gap-4 lg:grid-cols-2 sm:gap-6">
                 <!-- Card -->
                 <div
                     class="p-4 md:p-5 min-h-102.5 flex flex-col bg-white border border-gray-200 shadow-2xs rounded-xl dark:bg-neutral-800 dark:border-neutral-700"
                 >
                     <!-- Header -->
                     <div
-                        class="flex flex-wrap justify-between items-center gap-2"
+                        class="flex flex-wrap items-center justify-between gap-2"
                     >
                         <div>
                             <h2
@@ -1518,7 +1515,7 @@ onMounted(() => {
                                 Income
                             </h2>
                             <p
-                                class="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200"
+                                class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
                             >
                                 $126,238.49
                             </p>
@@ -1559,7 +1556,7 @@ onMounted(() => {
                 >
                     <!-- Header -->
                     <div
-                        class="flex flex-wrap justify-between items-center gap-2"
+                        class="flex flex-wrap items-center justify-between gap-2"
                     >
                         <div>
                             <h2
@@ -1568,7 +1565,7 @@ onMounted(() => {
                                 Visitors
                             </h2>
                             <p
-                                class="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200"
+                                class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
                             >
                                 80.3k
                             </p>
@@ -1609,11 +1606,11 @@ onMounted(() => {
                 <div class="-m-1.5 overflow-x-auto">
                     <div class="p-1.5 min-w-full inline-block align-middle">
                         <div
-                            class="bg-white border border-gray-200 rounded-xl shadow-2xs overflow-hidden dark:bg-neutral-800 dark:border-neutral-700"
+                            class="overflow-hidden bg-white border border-gray-200 rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700"
                         >
                             <!-- Header -->
                             <div
-                                class="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-b border-gray-200 dark:border-neutral-700"
+                                class="grid gap-3 px-6 py-4 border-b border-gray-200 md:flex md:justify-between md:items-center dark:border-neutral-700"
                             >
                                 <div>
                                     <h2
@@ -1631,14 +1628,14 @@ onMounted(() => {
                                 <div>
                                     <div class="inline-flex gap-x-2">
                                         <a
-                                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
+                                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg gap-x-2 shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
                                             href="#"
                                         >
                                             View all
                                         </a>
 
                                         <a
-                                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-hidden focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg gap-x-2 hover:bg-blue-700 focus:outline-hidden focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
                                             href="#"
                                         >
                                             <svg
@@ -1671,7 +1668,7 @@ onMounted(() => {
                                     <tr>
                                         <th
                                             scope="col"
-                                            class="ps-6 py-3 text-start"
+                                            class="py-3 ps-6 text-start"
                                         >
                                             <label
                                                 for="hs-at-with-checkboxes-main"
@@ -1679,7 +1676,7 @@ onMounted(() => {
                                             >
                                                 <input
                                                     type="checkbox"
-                                                    class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                    class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                     id="hs-at-with-checkboxes-main"
                                                 />
                                                 <span class="sr-only"
@@ -1690,13 +1687,13 @@ onMounted(() => {
 
                                         <th
                                             scope="col"
-                                            class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3 text-start"
+                                            class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6 text-start"
                                         >
                                             <div
                                                 class="flex items-center gap-x-2"
                                             >
                                                 <span
-                                                    class="text-xs font-semibold uppercase text-gray-800 dark:text-neutral-200"
+                                                    class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
                                                 >
                                                     Name
                                                 </span>
@@ -1711,7 +1708,7 @@ onMounted(() => {
                                                 class="flex items-center gap-x-2"
                                             >
                                                 <span
-                                                    class="text-xs font-semibold uppercase text-gray-800 dark:text-neutral-200"
+                                                    class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
                                                 >
                                                     Position
                                                 </span>
@@ -1726,7 +1723,7 @@ onMounted(() => {
                                                 class="flex items-center gap-x-2"
                                             >
                                                 <span
-                                                    class="text-xs font-semibold uppercase text-gray-800 dark:text-neutral-200"
+                                                    class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
                                                 >
                                                     Status
                                                 </span>
@@ -1741,7 +1738,7 @@ onMounted(() => {
                                                 class="flex items-center gap-x-2"
                                             >
                                                 <span
-                                                    class="text-xs font-semibold uppercase text-gray-800 dark:text-neutral-200"
+                                                    class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
                                                 >
                                                     Portfolio
                                                 </span>
@@ -1756,7 +1753,7 @@ onMounted(() => {
                                                 class="flex items-center gap-x-2"
                                             >
                                                 <span
-                                                    class="text-xs font-semibold uppercase text-gray-800 dark:text-neutral-200"
+                                                    class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
                                                 >
                                                     Created
                                                 </span>
@@ -1775,14 +1772,14 @@ onMounted(() => {
                                 >
                                     <tr>
                                         <td class="size-px whitespace-nowrap">
-                                            <div class="ps-6 py-3">
+                                            <div class="py-3 ps-6">
                                                 <label
                                                     for="hs-at-with-checkboxes-1"
                                                     class="flex"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                         id="hs-at-with-checkboxes-1"
                                                     />
                                                     <span class="sr-only"
@@ -1793,7 +1790,7 @@ onMounted(() => {
                                         </td>
                                         <td class="size-px whitespace-nowrap">
                                             <div
-                                                class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3"
+                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
                                             >
                                                 <div
                                                     class="flex items-center gap-x-3"
@@ -1885,7 +1882,7 @@ onMounted(() => {
                                         <td class="size-px whitespace-nowrap">
                                             <div class="px-6 py-1.5">
                                                 <a
-                                                    class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
+                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
                                                     href="#"
                                                 >
                                                     Edit
@@ -1896,14 +1893,14 @@ onMounted(() => {
 
                                     <tr>
                                         <td class="size-px whitespace-nowrap">
-                                            <div class="ps-6 py-3">
+                                            <div class="py-3 ps-6">
                                                 <label
                                                     for="hs-at-with-checkboxes-2"
                                                     class="flex"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                         id="hs-at-with-checkboxes-2"
                                                     />
                                                     <span class="sr-only"
@@ -1914,7 +1911,7 @@ onMounted(() => {
                                         </td>
                                         <td class="size-px whitespace-nowrap">
                                             <div
-                                                class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3"
+                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
                                             >
                                                 <div
                                                     class="flex items-center gap-x-3"
@@ -2006,7 +2003,7 @@ onMounted(() => {
                                         <td class="size-px whitespace-nowrap">
                                             <div class="px-6 py-1.5">
                                                 <a
-                                                    class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
+                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
                                                     href="#"
                                                 >
                                                     Edit
@@ -2017,14 +2014,14 @@ onMounted(() => {
 
                                     <tr>
                                         <td class="size-px whitespace-nowrap">
-                                            <div class="ps-6 py-3">
+                                            <div class="py-3 ps-6">
                                                 <label
                                                     for="hs-at-with-checkboxes-3"
                                                     class="flex"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                         id="hs-at-with-checkboxes-3"
                                                     />
                                                     <span class="sr-only"
@@ -2035,7 +2032,7 @@ onMounted(() => {
                                         </td>
                                         <td class="size-px whitespace-nowrap">
                                             <div
-                                                class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3"
+                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
                                             >
                                                 <div
                                                     class="flex items-center gap-x-3"
@@ -2044,7 +2041,7 @@ onMounted(() => {
                                                         class="inline-flex items-center justify-center size-9.5 rounded-full bg-white border border-gray-300 dark:bg-neutral-800 dark:border-neutral-700"
                                                     >
                                                         <span
-                                                            class="font-medium text-sm text-gray-800 dark:text-neutral-200"
+                                                            class="text-sm font-medium text-gray-800 dark:text-neutral-200"
                                                             >A</span
                                                         >
                                                     </span>
@@ -2129,7 +2126,7 @@ onMounted(() => {
                                         <td class="size-px whitespace-nowrap">
                                             <div class="px-6 py-1.5">
                                                 <a
-                                                    class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
+                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
                                                     href="#"
                                                 >
                                                     Edit
@@ -2140,14 +2137,14 @@ onMounted(() => {
 
                                     <tr>
                                         <td class="size-px whitespace-nowrap">
-                                            <div class="ps-6 py-3">
+                                            <div class="py-3 ps-6">
                                                 <label
                                                     for="hs-at-with-checkboxes-4"
                                                     class="flex"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                         id="hs-at-with-checkboxes-4"
                                                     />
                                                     <span class="sr-only"
@@ -2158,7 +2155,7 @@ onMounted(() => {
                                         </td>
                                         <td class="size-px whitespace-nowrap">
                                             <div
-                                                class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3"
+                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
                                             >
                                                 <div
                                                     class="flex items-center gap-x-3"
@@ -2249,7 +2246,7 @@ onMounted(() => {
                                         <td class="size-px whitespace-nowrap">
                                             <div class="px-6 py-1.5">
                                                 <a
-                                                    class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
+                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
                                                     href="#"
                                                 >
                                                     Edit
@@ -2260,14 +2257,14 @@ onMounted(() => {
 
                                     <tr>
                                         <td class="size-px whitespace-nowrap">
-                                            <div class="ps-6 py-3">
+                                            <div class="py-3 ps-6">
                                                 <label
                                                     for="hs-at-with-checkboxes-5"
                                                     class="flex"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                         id="hs-at-with-checkboxes-5"
                                                     />
                                                     <span class="sr-only"
@@ -2278,7 +2275,7 @@ onMounted(() => {
                                         </td>
                                         <td class="size-px whitespace-nowrap">
                                             <div
-                                                class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3"
+                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
                                             >
                                                 <div
                                                     class="flex items-center gap-x-3"
@@ -2287,7 +2284,7 @@ onMounted(() => {
                                                         class="inline-flex items-center justify-center size-9.5 rounded-full bg-white border border-gray-300 dark:bg-neutral-800 dark:border-neutral-700"
                                                     >
                                                         <span
-                                                            class="font-medium text-sm text-gray-800 dark:text-neutral-200"
+                                                            class="text-sm font-medium text-gray-800 dark:text-neutral-200"
                                                             >D</span
                                                         >
                                                     </span>
@@ -2373,7 +2370,7 @@ onMounted(() => {
                                         <td class="size-px whitespace-nowrap">
                                             <div class="px-6 py-1.5">
                                                 <a
-                                                    class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
+                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
                                                     href="#"
                                                 >
                                                     Edit
@@ -2384,14 +2381,14 @@ onMounted(() => {
 
                                     <tr>
                                         <td class="size-px whitespace-nowrap">
-                                            <div class="ps-6 py-3">
+                                            <div class="py-3 ps-6">
                                                 <label
                                                     for="hs-at-with-checkboxes-6"
                                                     class="flex"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                         id="hs-at-with-checkboxes-6"
                                                     />
                                                     <span class="sr-only"
@@ -2402,7 +2399,7 @@ onMounted(() => {
                                         </td>
                                         <td class="size-px whitespace-nowrap">
                                             <div
-                                                class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3"
+                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
                                             >
                                                 <div
                                                     class="flex items-center gap-x-3"
@@ -2494,7 +2491,7 @@ onMounted(() => {
                                         <td class="size-px whitespace-nowrap">
                                             <div class="px-6 py-1.5">
                                                 <a
-                                                    class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
+                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
                                                     href="#"
                                                 >
                                                     Edit
@@ -2505,14 +2502,14 @@ onMounted(() => {
 
                                     <tr>
                                         <td class="size-px whitespace-nowrap">
-                                            <div class="ps-6 py-3">
+                                            <div class="py-3 ps-6">
                                                 <label
                                                     for="hs-at-with-checkboxes-7"
                                                     class="flex"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                         id="hs-at-with-checkboxes-7"
                                                     />
                                                     <span class="sr-only"
@@ -2523,7 +2520,7 @@ onMounted(() => {
                                         </td>
                                         <td class="size-px whitespace-nowrap">
                                             <div
-                                                class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3"
+                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
                                             >
                                                 <div
                                                     class="flex items-center gap-x-3"
@@ -2614,7 +2611,7 @@ onMounted(() => {
                                         <td class="size-px whitespace-nowrap">
                                             <div class="px-6 py-1.5">
                                                 <a
-                                                    class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
+                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
                                                     href="#"
                                                 >
                                                     Edit
@@ -2625,14 +2622,14 @@ onMounted(() => {
 
                                     <tr>
                                         <td class="size-px whitespace-nowrap">
-                                            <div class="ps-6 py-3">
+                                            <div class="py-3 ps-6">
                                                 <label
                                                     for="hs-at-with-checkboxes-8"
                                                     class="flex"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                         id="hs-at-with-checkboxes-8"
                                                     />
                                                     <span class="sr-only"
@@ -2643,7 +2640,7 @@ onMounted(() => {
                                         </td>
                                         <td class="size-px whitespace-nowrap">
                                             <div
-                                                class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3"
+                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
                                             >
                                                 <div
                                                     class="flex items-center gap-x-3"
@@ -2734,7 +2731,7 @@ onMounted(() => {
                                         <td class="size-px whitespace-nowrap">
                                             <div class="px-6 py-1.5">
                                                 <a
-                                                    class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
+                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
                                                     href="#"
                                                 >
                                                     Edit
@@ -2745,14 +2742,14 @@ onMounted(() => {
 
                                     <tr>
                                         <td class="size-px whitespace-nowrap">
-                                            <div class="ps-6 py-3">
+                                            <div class="py-3 ps-6">
                                                 <label
                                                     for="hs-at-with-checkboxes-9"
                                                     class="flex"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                         id="hs-at-with-checkboxes-9"
                                                     />
                                                     <span class="sr-only"
@@ -2763,7 +2760,7 @@ onMounted(() => {
                                         </td>
                                         <td class="size-px whitespace-nowrap">
                                             <div
-                                                class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3"
+                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
                                             >
                                                 <div
                                                     class="flex items-center gap-x-3"
@@ -2772,7 +2769,7 @@ onMounted(() => {
                                                         class="inline-flex items-center justify-center size-9.5 rounded-full bg-white border border-gray-300 dark:bg-neutral-800 dark:border-neutral-700"
                                                     >
                                                         <span
-                                                            class="font-medium text-sm text-gray-800 dark:text-neutral-200"
+                                                            class="text-sm font-medium text-gray-800 dark:text-neutral-200"
                                                             >C</span
                                                         >
                                                     </span>
@@ -2858,7 +2855,7 @@ onMounted(() => {
                                         <td class="size-px whitespace-nowrap">
                                             <div class="px-6 py-1.5">
                                                 <a
-                                                    class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
+                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
                                                     href="#"
                                                 >
                                                     Edit
@@ -2869,14 +2866,14 @@ onMounted(() => {
 
                                     <tr>
                                         <td class="size-px whitespace-nowrap">
-                                            <div class="ps-6 py-3">
+                                            <div class="py-3 ps-6">
                                                 <label
                                                     for="hs-at-with-checkboxes-10"
                                                     class="flex"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                         id="hs-at-with-checkboxes-10"
                                                     />
                                                     <span class="sr-only"
@@ -2887,7 +2884,7 @@ onMounted(() => {
                                         </td>
                                         <td class="size-px whitespace-nowrap">
                                             <div
-                                                class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3"
+                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
                                             >
                                                 <div
                                                     class="flex items-center gap-x-3"
@@ -2979,7 +2976,7 @@ onMounted(() => {
                                         <td class="size-px whitespace-nowrap">
                                             <div class="px-6 py-1.5">
                                                 <a
-                                                    class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
+                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
                                                     href="#"
                                                 >
                                                     Edit
@@ -2990,14 +2987,14 @@ onMounted(() => {
 
                                     <tr>
                                         <td class="size-px whitespace-nowrap">
-                                            <div class="ps-6 py-3">
+                                            <div class="py-3 ps-6">
                                                 <label
                                                     for="hs-at-with-checkboxes-11"
                                                     class="flex"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                         id="hs-at-with-checkboxes-11"
                                                     />
                                                     <span class="sr-only"
@@ -3008,7 +3005,7 @@ onMounted(() => {
                                         </td>
                                         <td class="size-px whitespace-nowrap">
                                             <div
-                                                class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3"
+                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
                                             >
                                                 <div
                                                     class="flex items-center gap-x-3"
@@ -3017,7 +3014,7 @@ onMounted(() => {
                                                         class="inline-flex items-center justify-center size-9.5 rounded-full bg-white border border-gray-300 dark:bg-neutral-800 dark:border-neutral-700"
                                                     >
                                                         <span
-                                                            class="font-medium text-sm text-gray-800 dark:text-neutral-200"
+                                                            class="text-sm font-medium text-gray-800 dark:text-neutral-200"
                                                             >I</span
                                                         >
                                                     </span>
@@ -3102,7 +3099,7 @@ onMounted(() => {
                                         <td class="size-px whitespace-nowrap">
                                             <div class="px-6 py-1.5">
                                                 <a
-                                                    class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
+                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
                                                     href="#"
                                                 >
                                                     Edit
@@ -3113,14 +3110,14 @@ onMounted(() => {
 
                                     <tr>
                                         <td class="size-px whitespace-nowrap">
-                                            <div class="ps-6 py-3">
+                                            <div class="py-3 ps-6">
                                                 <label
                                                     for="hs-at-with-checkboxes-12"
                                                     class="flex"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="shrink-0 border-gray-300 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                                                         id="hs-at-with-checkboxes-12"
                                                     />
                                                     <span class="sr-only"
@@ -3131,7 +3128,7 @@ onMounted(() => {
                                         </td>
                                         <td class="size-px whitespace-nowrap">
                                             <div
-                                                class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3"
+                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
                                             >
                                                 <div
                                                     class="flex items-center gap-x-3"
@@ -3223,7 +3220,7 @@ onMounted(() => {
                                         <td class="size-px whitespace-nowrap">
                                             <div class="px-6 py-1.5">
                                                 <a
-                                                    class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
+                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
                                                     href="#"
                                                 >
                                                     Edit
@@ -3237,7 +3234,7 @@ onMounted(() => {
 
                             <!-- Footer -->
                             <div
-                                class="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-t border-gray-200 dark:border-neutral-700"
+                                class="grid gap-3 px-6 py-4 border-t border-gray-200 md:flex md:justify-between md:items-center dark:border-neutral-700"
                             >
                                 <div>
                                     <p

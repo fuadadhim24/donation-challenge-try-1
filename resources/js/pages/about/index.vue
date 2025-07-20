@@ -90,7 +90,7 @@
                     aria-label="Preline"
                 >
                     <img
-                        src="../../../../public/img/logo.png"
+                        src="../../../public/img/logo.png"
                         width="50"
                         height="50"
                         alt="Logo"
@@ -248,327 +248,306 @@
                     <div>
                         <a
                             class="inline-block text-black hover:text-gray-600 focus:outline-hidden focus:text-gray-600 dark:text-white dark:hover:text-neutral-300 dark:focus:text-neutral-300"
-                            href="../"
+                            href="/"
                             >Beranda</a
                         >
                     </div>
                     <div>
                         <a
-                            class="relative inline-block text-black focus:outline-hidden before:absolute before:bottom-0.5 before:start-0 before:-z-1 before:w-full before:h-1 before:bg-blue-400 dark:text-white"
+                            class="inline-block text-black hover:text-gray-600 focus:outline-hidden focus:text-gray-600 dark:text-white dark:hover:text-neutral-300 dark:focus:text-neutral-300"
                             href="/daftar-donasi"
-                            aria-current="page"
                             >Donasi</a
                         >
                     </div>
                     <div>
-                        <a
-                            class="inline-block text-black hover:text-gray-600 focus:outline-hidden focus:text-gray-600 dark:text-white dark:hover:text-neutral-300 dark:focus:text-neutral-300"
-                            href="/tentang-kami"
-                            >Tentang Kami</a
-                        >
+                        <div>
+                            <a
+                                class="relative inline-block text-black focus:outline-hidden before:absolute before:bottom-0.5 before:start-0 before:-z-1 before:w-full before:h-1 before:bg-blue-400 dark:text-white"
+                                href="/tentang-kami"
+                                aria-current="page"
+                                >Tentang Kami</a
+                            >
+                        </div>
                     </div>
                 </div>
             </div>
             <!-- End Collapse -->
         </nav>
     </header>
-
     <main id="content">
-        <!-- Works -->
-        <section class="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-24">
+        <!-- Timelines -->
+        <section class="px-4 py-12 mx-auto mt-10 max-w-7xl sm:px-6 lg:px-8">
             <div class="max-w-2xl mx-auto mb-6 text-center sm:mb-10">
-                <p class="text-sm text-gray-500">Kebaikan mulai dari anda</p>
+                <p class="text-sm text-gray-500">Transparan dan Akuntabel</p>
                 <h1
                     class="text-3xl font-medium text-black sm:text-4xl dark:text-white"
                 >
-                    Campaign Donasi
+                    Bagaimana Cara Kerja kami
                 </h1>
             </div>
+            <ol
+                class="relative space-y-8 before:absolute before:top-0 before:left-1/2 before:h-full before:w-0.5 before:-translate-x-1/2 before:rounded-full before:bg-gray-200"
+            >
+                <li
+                    class="relative grid grid-cols-2 group odd:-me-3 even:-ms-3"
+                >
+                    <div
+                        class="relative flex items-start gap-4 group-odd:flex-row-reverse group-odd:text-right group-even:order-last"
+                    >
+                        <span
+                            class="bg-blue-600 rounded-full size-3 shrink-0"
+                        ></span>
 
-            <!-- Card Grid -->
+                        <div class="-mt-2">
+                            <time class="font-medium text-gray-700 text-xs/none"
+                                >Minggu 1</time
+                            >
+
+                            <h3 class="text-lg font-bold text-gray-900">
+                                Pendataan Kebutuhan
+                            </h3>
+
+                            <p class="mt-0.5 text-sm text-gray-700">
+                                Tim kami mendata kebutuhan mendesak dari
+                                masyarakat terdampak secara langsung, memastikan
+                                setiap bantuan tepat sasaran.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div aria-hidden="true"></div>
+                </li>
+
+                <li
+                    class="relative grid grid-cols-2 group odd:-me-3 even:-ms-3"
+                >
+                    <div
+                        class="relative flex items-start gap-4 group-odd:flex-row-reverse group-odd:text-right group-even:order-last"
+                    >
+                        <span
+                            class="bg-blue-600 rounded-full size-3 shrink-0"
+                        ></span>
+
+                        <div class="-mt-2">
+                            <time class="font-medium text-gray-700 text-xs/none"
+                                >Minggu 3</time
+                            >
+
+                            <h3 class="text-lg font-bold text-gray-900">
+                                Penyaluran Tahap Awal
+                            </h3>
+
+                            <p class="mt-0.5 text-sm text-gray-700">
+                                Bantuan segera disalurkan ke titik prioritas,
+                                dengan update real-time yang dapat dipantau oleh
+                                para donatur.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div aria-hidden="true"></div>
+                </li>
+
+                <li
+                    class="relative grid grid-cols-2 group odd:-me-3 even:-ms-3"
+                >
+                    <div
+                        class="relative flex items-start gap-4 group-odd:flex-row-reverse group-odd:text-right group-even:order-last"
+                    >
+                        <span
+                            class="bg-blue-600 rounded-full size-3 shrink-0"
+                        ></span>
+
+                        <div class="-mt-2">
+                            <time class="font-medium text-gray-700 text-xs/none"
+                                >Minggu 5</time
+                            >
+
+                            <h3 class="text-lg font-bold text-gray-900">
+                                Transparansi & Pelaporan
+                            </h3>
+
+                            <p class="mt-0.5 text-sm text-gray-700">
+                                Setiap donasi tercatat secara terbuka, dan
+                                laporan penyaluran disampaikan agar Anda yakin
+                                bantuan telah diterima oleh yang membutuhkan.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div aria-hidden="true"></div>
+                </li>
+            </ol>
+        </section>
+
+        <!-- End Timelines -->
+        <!-- Contact -->
+        <section class="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-24">
+            <div class="max-w-2xl mx-auto mb-6 text-center sm:mb-10">
+                <h2
+                    class="text-2xl font-medium text-black sm:text-4xl dark:text-white"
+                >
+                    Tertarik Kolaborasi?
+                </h2>
+            </div>
+
             <div
-                class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-12"
+                class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-center md:gap-8 lg:gap-12"
             >
                 <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
+                    class="overflow-hidden bg-gray-100 aspect-w-16 aspect-h-6 lg:aspect-h-14 rounded-2xl dark:bg-neutral-800"
                 >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Gempa Sulawesi"
-                        />
-                    </div>
-                    <div class="flex flex-col flex-grow p-4">
-                        <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
-                        >
-                            Bantuan Gempa Sulawesi
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Gempa 6.5 SR melanda Sulawesi, ratusan keluarga
-                            kehilangan rumah dan butuh bantuan darurat.
-                        </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 18%"
-                                ></div>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 87.520.000 terkumpul dari Rp 500.000.000
-                            </p>
-                        </div>
-                        <!-- Tombol -->
-                        <div class="pt-4 mt-auto">
-                            <a
-                                href="/detail-donasi"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
-                    </div>
+                    <img
+                        class="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 group-focus:scale-105 rounded-2xl"
+                        src="https://images.unsplash.com/photo-1572021335469-31706a17aaef?q=80&w=560&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                        alt="Contacts Image"
+                    />
                 </div>
+                <!-- End Col -->
 
-                <!-- Card 2 -->
-                <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
-                >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Banjir Jakarta"
-                        />
-                    </div>
-                    <div class="flex flex-col flex-grow p-4">
+                <div class="space-y-8 lg:space-y-16">
+                    <div>
                         <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
+                            class="mb-5 font-semibold text-black dark:text-white"
                         >
-                            Banjir Jakarta
+                            Alamat
                         </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Ribuan warga Jakarta terdampak banjir, membutuhkan
-                            makanan, air bersih, dan obat-obatan.
-                        </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 42%"
-                                ></div>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 125.000.000 terkumpul dari Rp 300.000.000
-                            </p>
-                        </div>
-                        <!-- Tombol -->
-                        <div class="pt-4 mt-auto">
-                            <a
-                                href="#"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Card 3 -->
-                <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
-                >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Kebakaran Kalimantan"
-                        />
-                    </div>
-                    <div class="flex flex-col flex-grow p-4">
-                        <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
+                        <!-- Grid -->
+                        <div
+                            class="grid gap-4 sm:grid-cols-2 sm:gap-6 md:gap-8 lg:gap-12"
                         >
-                            Kebakaran Hutan Kalimantan
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Asap pekat akibat kebakaran hutan mengancam
-                            kesehatan warga sekitar. Mari bantu mereka.
-                        </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 29%"
-                                ></div>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 220.000.000 terkumpul dari Rp 750.000.000
-                            </p>
-                        </div>
-                        <!-- Tombol -->
-                        <div class="pt-4 mt-auto">
-                            <a
-                                href="#"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
-                >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Gempa Sulawesi"
-                        />
-                    </div>
-                    <div class="flex flex-col flex-grow p-4">
-                        <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
-                        >
-                            Bantuan Gempa Sulawesi
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Gempa 6.5 SR melanda Sulawesi, ratusan keluarga
-                            kehilangan rumah dan butuh bantuan darurat.
-                        </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 18%"
-                                ></div>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 87.520.000 terkumpul dari Rp 500.000.000
-                            </p>
-                        </div>
-                        <!-- Tombol -->
-                        <div class="pt-4 mt-auto">
-                            <a
-                                href="#"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                            <div class="flex gap-4">
+                                <svg
+                                    class="text-gray-500 shrink-0 size-5 dark:text-neutral-500"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path
+                                        d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"
+                                    ></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
 
-                <!-- Card 2 -->
-                <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
-                >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Banjir Jakarta"
-                        />
-                    </div>
-                    <div class="flex flex-col flex-grow p-4">
-                        <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
-                        >
-                            Banjir Jakarta
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Ribuan warga Jakarta terdampak banjir, membutuhkan
-                            makanan, air bersih, dan obat-obatan.
-                        </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 42%"
-                                ></div>
+                                <div class="grow">
+                                    <p
+                                        class="text-sm text-gray-600 dark:text-neutral-400"
+                                    >
+                                        Indonesia
+                                    </p>
+                                    <address
+                                        class="mt-1 not-italic text-black dark:text-white"
+                                    >
+                                        No. 31, Jl. Jenderal Sudirman<br />
+                                        Sleman, Yogyakarta
+                                    </address>
+                                </div>
                             </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 125.000.000 terkumpul dari Rp 300.000.000
-                            </p>
                         </div>
-                        <!-- Tombol -->
-                        <div class="pt-4 mt-auto">
-                            <a
-                                href="#"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
+                        <!-- End Grid -->
                     </div>
-                </div>
 
-                <!-- Card 3 -->
-                <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
-                >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Kebakaran Kalimantan"
-                        />
-                    </div>
-                    <div class="flex flex-col flex-grow p-4">
+                    <div>
                         <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
+                            class="mb-5 font-semibold text-black dark:text-white"
                         >
-                            Kebakaran Hutan Kalimantan
+                            Kontak
                         </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Asap pekat akibat kebakaran hutan mengancam
-                            kesehatan warga sekitar. Mari bantu mereka.
-                        </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 29%"
-                                ></div>
+
+                        <!-- Grid -->
+                        <div
+                            class="grid gap-4 sm:grid-cols-2 sm:gap-6 md:gap-8 lg:gap-12"
+                        >
+                            <div class="flex gap-4">
+                                <svg
+                                    class="text-gray-500 shrink-0 size-5 dark:text-neutral-500"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path
+                                        d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0l8 6Z"
+                                    ></path>
+                                    <path
+                                        d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10"
+                                    ></path>
+                                </svg>
+
+                                <div class="grow">
+                                    <p
+                                        class="text-sm text-gray-600 dark:text-neutral-400"
+                                    >
+                                        Email kami
+                                    </p>
+                                    <p>
+                                        <a
+                                            class="relative inline-block font-medium text-black before:absolute before:bottom-0.5 before:start-0 before:-z-1 before:w-full before:h-1 before:bg-blue-400 hover:before:bg-black focus:outline-hidden focus:before:bg-black dark:text-white dark:hover:before:bg-white dark:focus:before:bg-white"
+                                            href="mailto:example@site.so"
+                                        >
+                                            hello@example.so
+                                        </a>
+                                    </p>
+                                </div>
                             </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 220.000.000 terkumpul dari Rp 750.000.000
-                            </p>
+
+                            <div class="flex gap-4">
+                                <svg
+                                    class="text-gray-500 shrink-0 size-5 dark:text-neutral-500"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+                                    />
+                                </svg>
+
+                                <div class="grow">
+                                    <p
+                                        class="text-sm text-gray-600 dark:text-neutral-400"
+                                    >
+                                        Hubungi kami
+                                    </p>
+                                    <p>
+                                        <a
+                                            class="relative inline-block font-medium text-black before:absolute before:bottom-0.5 before:start-0 before:-z-1 before:w-full before:h-1 before:bg-blue-400 hover:before:bg-black focus:outline-hidden focus:before:bg-black dark:text-white dark:hover:before:bg-white dark:focus:before:bg-white"
+                                            href="mailto:example@site.so"
+                                        >
+                                            +44 222 777-000
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        <!-- Tombol -->
-                        <div class="pt-4 mt-auto">
-                            <a
-                                href="#"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
+                        <!-- End Grid -->
                     </div>
                 </div>
+                <!-- End Col -->
             </div>
-            <!-- End Card Grid -->
-
-            <!-- <div class="mt-10 text-center lg:mt-20">
-                <a
-                    class="relative inline-block font-medium md:text-lg text-black before:absolute before:bottom-0.5 before:start-0 before:-z-1 before:w-full before:h-1 before:bg-blue-400 hover:before:bg-black focus:outline-hidden focus:before:bg-black dark:text-white dark:hover:before:bg-white dark:focus:before:bg-white"
-                    href="#"
-                >
-                    View all Products
-                </a>
-            </div> -->
         </section>
-        <!-- End Works -->
+        <!-- End Contact -->
     </main>
+
+    <!-- ========== FOOTER ========== -->
     <footer
         class="mt-auto border-t border-gray-200 md:border-t-0 dark:border-neutral-700"
     >
@@ -599,6 +578,16 @@
                             href="/"
                         >
                             Beranda
+                        </a>
+                    </li>
+                    <li
+                        class="inline-block relative pe-8 last:pe-0 last-of-type:before:hidden before:absolute before:top-1/2 before:end-3 before:-translate-y-1/2 before:content-['/'] before:text-black dark:before:text-white"
+                    >
+                        <a
+                            class="inline-flex text-sm text-black gap-x-2 hover:text-gray-600 dark:text-white dark:hover:text-neutral-300"
+                            href="/daftar-donasi"
+                        >
+                            Donasi
                         </a>
                     </li>
                     <li

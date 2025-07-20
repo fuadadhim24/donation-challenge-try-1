@@ -1,48 +1,3 @@
-<script setup>
-import { Head } from "@inertiajs/vue3";
-import { Link, usePage } from "@inertiajs/vue3";
-import { onMounted } from "vue";
-
-function loadScript(src) {
-    return new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) {
-            resolve();
-            return;
-        }
-
-        const script = document.createElement("script");
-        script.src = src;
-        script.async = true;
-        script.onload = resolve;
-        script.onerror = () => reject(new Error(`Gagal memuat script: ${src}`));
-        document.head.appendChild(script);
-    });
-}
-
-async function initView() {
-    await loadScript(
-        "https://www.googletagmanager.com/gtag/js?id=G-B73TDMXKF5"
-    );
-
-    loadScript("https://cdn.jsdelivr.net/npm/preline/dist/index.js");
-
-    window.scrollTo(0, 0);
-
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-        dataLayer.push(arguments);
-    }
-    gtag("js", new Date());
-    gtag("config", "G-B73TDMXKF5");
-}
-
-const { props } = usePage();
-
-onMounted(() => {
-    initView();
-});
-</script>
-
 <template>
     <Head>
         <meta charset="utf-8" />
@@ -169,14 +124,72 @@ onMounted(() => {
                         <circle cx="11" cy="11" r="8" />
                     </svg>
                 </button>
-                <a href="/login">
-                    <button
-                        type="button"
-                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-black transition bg-blue-400 border border-transparent gap-x-2 text-nowrap rounded-xl hover:bg-blue-600 focus:outline-hidden focus:bg-blue-600 disabled:opacity-50 disabled:pointer-events-none"
-                    >
-                        Masuk
-                    </button>
+                <a
+                    v-if="!authUser"
+                    href="/login"
+                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-black transition bg-blue-400 border border-transparent gap-x-2 text-nowrap rounded-xl hover:bg-blue-600 focus:outline-hidden focus:bg-blue-600 disabled:opacity-50 disabled:pointer-events-none"
+                >
+                    Masuk
                 </a>
+                <div v-else class="relative inline-flex hs-dropdown">
+                    <button
+                        id="hs-dropdown-account"
+                        type="button"
+                        class="inline-flex items-center justify-center border rounded-full size-9"
+                    >
+                        <img
+                            class="rounded-full"
+                            :src="authUser.avatar_url"
+                            alt="Avatar"
+                        />
+                    </button>
+
+                    <div
+                        class="absolute z-50 hidden mt-2 bg-white rounded-lg shadow-md hs-dropdown-menu min-w-56"
+                        aria-labelledby="hs-dropdown-account"
+                    >
+                        <div class="px-4 py-3 bg-gray-100 rounded-t-lg">
+                            <p class="text-sm text-gray-500">Masuk sebagai</p>
+                            <p class="text-sm font-medium text-gray-800">
+                                {{ authUser.email }}
+                            </p>
+                        </div>
+                        <div class="p-2 space-y-1">
+                            <a
+                                :href="
+                                    userRole != null
+                                        ? `/${userRole}/dashboard`
+                                        : '/login'
+                                "
+                                class="block w-full px-4 py-2 text-left text-gray-700 rounded hover:bg-gray-100"
+                            >
+                                Dashboard
+                            </a>
+                            <Link
+                                href="/logout"
+                                method="post"
+                                as="button"
+                                preserve-state="false"
+                                class="flex items-center w-full gap-2 px-4 py-2 text-left text-red-500 rounded hover:bg-gray-100"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="size-4"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"
+                                    />
+                                    <polyline points="10 17 15 12 10 7" />
+                                    <line x1="15" y1="12" x2="3" y2="12" />
+                                </svg>
+                                Keluar
+                            </Link>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="lg:hidden">
                     <button
@@ -236,7 +249,7 @@ onMounted(() => {
                     <div>
                         <a
                             class="relative inline-block text-black focus:outline-hidden before:absolute before:bottom-0.5 before:start-0 before:-z-1 before:w-full before:h-1 before:bg-blue-400 dark:text-white"
-                            href="#"
+                            href="/"
                             aria-current="page"
                             >Beranda</a
                         >
@@ -251,7 +264,7 @@ onMounted(() => {
                     <div>
                         <a
                             class="inline-block text-black hover:text-gray-600 focus:outline-hidden focus:text-gray-600 dark:text-white dark:hover:text-neutral-300 dark:focus:text-neutral-300"
-                            href="#"
+                            href="/tentang-kami"
                             >Tentang Kami</a
                         >
                     </div>
@@ -861,7 +874,7 @@ onMounted(() => {
                     >
                         <a
                             class="inline-flex text-sm text-black gap-x-2 hover:text-gray-600 dark:text-white dark:hover:text-neutral-300"
-                            href="#"
+                            href="/daftar-donasi"
                         >
                             Donasi
                         </a>
@@ -871,7 +884,7 @@ onMounted(() => {
                     >
                         <a
                             class="inline-flex text-sm text-black gap-x-2 hover:text-gray-600 dark:text-white dark:hover:text-neutral-300"
-                            href="#"
+                            href="/tentang-kami"
                         >
                             Tentang Kami
                         </a>
@@ -957,34 +970,51 @@ onMounted(() => {
     </footer>
 </template>
 
-<!-- <template>
-    <div class="max-w-2xl py-16 mx-auto text-center">
-        <h1 class="mb-6 text-4xl font-bold">Welcome to Donation Hub!</h1>
-        <p class="mb-8 text-lg">
-            Build impactful projects and support others through donations.
-        </p>
-        <div class="flex justify-center gap-4">
-            <Link
-                v-if="!props.auth"
-                href="/login"
-                class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
-            >
-                Login
-            </Link>
-            <Link
-                v-if="!props.auth"
-                href="/register"
-                class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-            >
-                Register
-            </Link>
-            <Link
-                v-else
-                href="/projects"
-                class="px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700"
-            >
-                View Projects
-            </Link>
-        </div>
-    </div>
-</template> -->
+<script setup>
+import { Head } from "@inertiajs/vue3";
+import { Link, usePage } from "@inertiajs/vue3";
+import { onMounted } from "vue";
+
+const page = usePage();
+const authUser = page.props.auth.user ?? null;
+const userRole = authUser ? authUser.role : null;
+
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+            resolve();
+            return;
+        }
+
+        const script = document.createElement("script");
+        script.src = src;
+        script.async = true;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error(`Gagal memuat script: ${src}`));
+        document.head.appendChild(script);
+    });
+}
+
+async function initView() {
+    await loadScript(
+        "https://www.googletagmanager.com/gtag/js?id=G-B73TDMXKF5"
+    );
+
+    loadScript("https://cdn.jsdelivr.net/npm/preline/dist/index.js");
+
+    window.scrollTo(0, 0);
+
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+    gtag("config", "G-B73TDMXKF5");
+}
+
+const { props } = usePage();
+
+onMounted(() => {
+    initView();
+});
+</script>

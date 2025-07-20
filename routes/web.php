@@ -15,6 +15,7 @@ use App\Http\Controllers\ProfileController;
 */
 
 Route::get('/', fn() => Inertia::render('welcome'))->name('home');
+Route::get('/tentang-kami', fn() => Inertia::render('about/index'))->name('about');
 Route::get('/detail-donasi', fn() => Inertia::render('project/detail'))->name('detail-donation');
 Route::get('/daftar-donasi', fn() => Inertia::render('project/donations'))->name('list-donation');
 

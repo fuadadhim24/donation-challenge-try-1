@@ -127,13 +127,13 @@
                             <circle cx="11" cy="11" r="8" />
                         </svg>
                     </button>
-                    <Link
-                        v-if="!user"
+                    <a
+                        v-if="!authUser"
                         href="/login"
                         class="inline-flex items-center px-3 py-2 text-sm font-medium text-black transition bg-blue-400 border border-transparent gap-x-2 text-nowrap rounded-xl hover:bg-blue-600 focus:outline-hidden focus:bg-blue-600 disabled:opacity-50 disabled:pointer-events-none"
                     >
                         Masuk
-                    </Link>
+                    </a>
                     <div v-else class="relative inline-flex hs-dropdown">
                         <button
                             id="hs-dropdown-account"
@@ -142,7 +142,7 @@
                         >
                             <img
                                 class="rounded-full"
-                                :src="user.avatar_url"
+                                :src="authUser.avatar_url"
                                 alt="Avatar"
                             />
                         </button>
@@ -156,17 +156,21 @@
                                     Masuk sebagai
                                 </p>
                                 <p class="text-sm font-medium text-gray-800">
-                                    {{ user.email }}
+                                    {{ authUser.email }}
                                 </p>
                             </div>
                             <div class="p-2 space-y-1">
-                                <Link
-                                    href="/dashboard"
+                                <a
+                                    :href="
+                                        userRole != null
+                                            ? `/${userRole}/dashboard`
+                                            : '/login'
+                                    "
                                     class="block w-full px-4 py-2 text-left text-gray-700 rounded hover:bg-gray-100"
                                 >
                                     Dashboard
-                                </Link>
-                                <Link
+                                </a>
+                                <a
                                     href="/logout"
                                     method="post"
                                     as="button"
@@ -186,7 +190,7 @@
                                         <line x1="15" y1="12" x2="3" y2="12" />
                                     </svg>
                                     Keluar
-                                </Link>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -249,7 +253,7 @@
                         <div>
                             <a
                                 class="inline-block text-black hover:text-gray-600 focus:outline-hidden focus:text-gray-600 dark:text-white dark:hover:text-neutral-300 dark:focus:text-neutral-300"
-                                href="../"
+                                href="/"
                                 aria-current="page"
                                 >Beranda</a
                             >
@@ -265,7 +269,7 @@
                         <div>
                             <a
                                 class="inline-block text-black hover:text-gray-600 focus:outline-hidden focus:text-gray-600 dark:text-white dark:hover:text-neutral-300 dark:focus:text-neutral-300"
-                                href="#"
+                                href="/tentang-kami"
                                 >Tentang Kami</a
                             >
                         </div>
@@ -362,13 +366,13 @@
                                 >
                                     Batal
                                 </button>
-                                <Link href="/login">
+                                <a href="/login">
                                     <button
                                         class="px-3 py-2 text-white bg-blue-500 rounded"
                                     >
                                         Login
                                     </button>
-                                </Link>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -686,7 +690,17 @@
                     >
                         <a
                             class="inline-flex text-sm text-black gap-x-2 hover:text-gray-600 dark:text-white dark:hover:text-neutral-300"
-                            href="#"
+                            href="/"
+                        >
+                            Beranda
+                        </a>
+                    </li>
+                    <li
+                        class="inline-block relative pe-8 last:pe-0 last-of-type:before:hidden before:absolute before:top-1/2 before:end-3 before:-translate-y-1/2 before:content-['/'] before:text-black dark:before:text-white"
+                    >
+                        <a
+                            class="inline-flex text-sm text-black gap-x-2 hover:text-gray-600 dark:text-white dark:hover:text-neutral-300"
+                            href="/daftar-donasi"
                         >
                             Donasi
                         </a>
@@ -696,7 +710,7 @@
                     >
                         <a
                             class="inline-flex text-sm text-black gap-x-2 hover:text-gray-600 dark:text-white dark:hover:text-neutral-300"
-                            href="#"
+                            href="/tentang-kami"
                         >
                             Tentang Kami
                         </a>
@@ -790,7 +804,7 @@ const page = usePage();
 const showLoginModal = ref(false);
 const showDonateModal = ref(false);
 const authUser = page.props.auth.user ?? null;
-const userRole = page.props.auth.user.role ?? null;
+const userRole = authUser ? authUser.role : null;
 
 function handleDonateClick() {
     console.log(authUser);

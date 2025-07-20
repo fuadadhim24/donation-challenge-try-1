@@ -32,7 +32,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         if ($user->hasRole('donor')) {
-            return redirect()->intended('/donor/dashboard');
+            return redirect()->intended('/');
         }
 
         if ($user->hasRole('requester')) {
