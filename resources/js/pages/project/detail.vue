@@ -68,8 +68,8 @@
 
     <main id="content">
         <!-- Announcement Banner -->
-        <section class="py-2 bg-black text-center dark:bg-white">
-            <div class="max-w-7xl px-4 sm:px-6 lg:px-8 mx-auto">
+        <section class="py-2 text-center bg-black dark:bg-white">
+            <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <p class="text-sm text-white dark:text-black">
                     🔥 Bantuan Darurat untuk Korban Bencana di Sulawesi Tengah –
                     Mari Berdonasi Sekarang!
@@ -80,20 +80,20 @@
 
         <!-- ========== HEADER ========== -->
         <header
-            class="flex flex-wrap lg:justify-start lg:flex-nowrap z-50 w-full py-7"
+            class="relative z-50 flex flex-wrap w-full overflow-visible lg:justify-start lg:flex-nowrap py-7"
         >
             <nav
-                class="relative max-w-7xl w-full flex flex-wrap lg:grid lg:grid-cols-12 basis-full items-center px-4 md:px-6 lg:px-8 mx-auto"
+                class="relative flex flex-wrap items-center w-full px-4 mx-auto max-w-7xl lg:grid lg:grid-cols-12 basis-full md:px-6 lg:px-8"
             >
-                <div class="lg:col-span-3 flex items-center">
+                <div class="flex items-center lg:col-span-3">
                     <!-- Logo -->
                     <a
-                        class="flex-none rounded-xl text-xl inline-block font-semibold focus:outline-hidden focus:opacity-80"
+                        class="flex-none inline-block text-xl font-semibold rounded-xl focus:outline-hidden focus:opacity-80"
                         href="https://preline.co/templates/creative-agency/index.html"
                         aria-label="Preline"
                     >
                         <img
-                            src="../../../public/img/logo.png"
+                            src="../../../../public/img/logo.png"
                             width="50"
                             height="50"
                             alt="Logo"
@@ -104,7 +104,7 @@
 
                 <!-- Button Group -->
                 <div
-                    class="flex items-center gap-x-1 lg:gap-x-2 ms-auto py-1 lg:ps-6 lg:order-3 lg:col-span-3"
+                    class="flex items-center py-1 gap-x-1 lg:gap-x-2 ms-auto lg:ps-6 lg:order-3 lg:col-span-3"
                 >
                     <button
                         type="button"
@@ -127,14 +127,69 @@
                             <circle cx="11" cy="11" r="8" />
                         </svg>
                     </button>
-                    <a href="/login">
+                    <Link
+                        v-if="!user"
+                        href="/login"
+                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-black transition bg-blue-400 border border-transparent gap-x-2 text-nowrap rounded-xl hover:bg-blue-600 focus:outline-hidden focus:bg-blue-600 disabled:opacity-50 disabled:pointer-events-none"
+                    >
+                        Masuk
+                    </Link>
+                    <div v-else class="relative inline-flex hs-dropdown">
                         <button
+                            id="hs-dropdown-account"
                             type="button"
-                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium text-nowrap rounded-xl border border-transparent bg-blue-400 text-black hover:bg-blue-600 focus:outline-hidden focus:bg-blue-600 transition disabled:opacity-50 disabled:pointer-events-none"
+                            class="inline-flex items-center justify-center border rounded-full size-9"
                         >
-                            Masuk
+                            <img
+                                class="rounded-full"
+                                :src="user.avatar_url"
+                                alt="Avatar"
+                            />
                         </button>
-                    </a>
+
+                        <div
+                            class="absolute z-50 hidden mt-2 bg-white rounded-lg shadow-md hs-dropdown-menu min-w-56"
+                            aria-labelledby="hs-dropdown-account"
+                        >
+                            <div class="px-4 py-3 bg-gray-100 rounded-t-lg">
+                                <p class="text-sm text-gray-500">
+                                    Masuk sebagai
+                                </p>
+                                <p class="text-sm font-medium text-gray-800">
+                                    {{ user.email }}
+                                </p>
+                            </div>
+                            <div class="p-2 space-y-1">
+                                <Link
+                                    href="/dashboard"
+                                    class="block w-full px-4 py-2 text-left text-gray-700 rounded hover:bg-gray-100"
+                                >
+                                    Dashboard
+                                </Link>
+                                <Link
+                                    href="/logout"
+                                    method="post"
+                                    as="button"
+                                    class="flex items-center w-full gap-2 px-4 py-2 text-left text-red-500 rounded hover:bg-gray-100"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="size-4"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"
+                                        />
+                                        <polyline points="10 17 15 12 10 7" />
+                                        <line x1="15" y1="12" x2="3" y2="12" />
+                                    </svg>
+                                    Keluar
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="lg:hidden">
                         <button
@@ -163,7 +218,7 @@
                                 <line x1="3" x2="21" y1="18" y2="18" />
                             </svg>
                             <svg
-                                class="hs-collapse-open:block hidden shrink-0 size-4"
+                                class="hidden hs-collapse-open:block shrink-0 size-4"
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24"
                                 height="24"
@@ -185,16 +240,16 @@
                 <!-- Collapse -->
                 <div
                     id="hs-pro-hcail"
-                    class="hs-collapse hidden overflow-hidden transition-all duration-300 basis-full grow lg:block lg:w-auto lg:basis-auto lg:order-2 lg:col-span-6"
+                    class="hidden overflow-hidden transition-all duration-300 hs-collapse basis-full grow lg:block lg:w-auto lg:basis-auto lg:order-2 lg:col-span-6"
                     aria-labelledby="hs-pro-hcail-collapse"
                 >
                     <div
-                        class="flex flex-col gap-y-4 gap-x-0 mt-5 lg:flex-row lg:justify-center lg:items-center lg:gap-y-0 lg:gap-x-7 lg:mt-0"
+                        class="flex flex-col mt-5 gap-y-4 gap-x-0 lg:flex-row lg:justify-center lg:items-center lg:gap-y-0 lg:gap-x-7 lg:mt-0"
                     >
                         <div>
                             <a
                                 class="inline-block text-black hover:text-gray-600 focus:outline-hidden focus:text-gray-600 dark:text-white dark:hover:text-neutral-300 dark:focus:text-neutral-300"
-                                href="#"
+                                href="../"
                                 aria-current="page"
                                 >Beranda</a
                             >
@@ -202,7 +257,7 @@
                         <div>
                             <a
                                 class="relative inline-block text-black focus:outline-hidden before:absolute before:bottom-0.5 before:start-0 before:-z-1 before:w-full before:h-1 before:bg-blue-400 dark:text-white"
-                                href="#"
+                                href="/daftar-donasi"
                             >
                                 Donasi</a
                             >
@@ -225,7 +280,7 @@
                 <img
                     src="https://images.unsplash.com/photo-1606787366850-de6330128bfc?q=80&w=1920&auto=format&fit=crop"
                     alt="Bantuan Gempa Sulawesi"
-                    class="w-full h-full object-cover"
+                    class="object-cover w-full h-full"
                 />
                 <!-- Overlay gradient -->
                 <div
@@ -233,11 +288,11 @@
                 ></div>
 
                 <!-- Title -->
-                <div class="absolute bottom-6 left-6 text-white">
-                    <h1 class="text-2xl md:text-4xl font-bold">
+                <div class="absolute text-white bottom-6 left-6">
+                    <h1 class="text-2xl font-bold md:text-4xl">
                         Bantuan Gempa Sulawesi
                     </h1>
-                    <p class="mt-2 text-sm md:text-base max-w-xl">
+                    <p class="max-w-xl mt-2 text-sm md:text-base">
                         Gempa 6.5 SR mengguncang Sulawesi, ribuan keluarga
                         kehilangan rumah dan mata pencaharian. Mari ulurkan
                         tangan.
@@ -246,20 +301,20 @@
             </div>
 
             <!-- Detail Info -->
-            <div class="max-w-5xl mx-auto p-6 md:py-10">
+            <div class="max-w-5xl p-6 mx-auto md:py-10">
                 <!-- Progress & Stats -->
-                <div class="bg-white shadow rounded-xl p-6 mb-6">
+                <div class="p-6 mb-6 bg-white shadow rounded-xl">
                     <div
-                        class="flex flex-wrap justify-between items-center mb-4"
+                        class="flex flex-wrap items-center justify-between mb-4"
                     >
                         <div>
-                            <p class="text-gray-600 text-sm">Terkumpul</p>
+                            <p class="text-sm text-gray-600">Terkumpul</p>
                             <p class="text-xl font-semibold text-green-600">
                                 Rp 120.000.000
                             </p>
                         </div>
                         <div class="text-right">
-                            <p class="text-gray-600 text-sm">Target</p>
+                            <p class="text-sm text-gray-600">Target</p>
                             <p class="text-xl font-semibold text-gray-800">
                                 Rp 500.000.000
                             </p>
@@ -267,9 +322,9 @@
                     </div>
 
                     <!-- Progress bar -->
-                    <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="w-full h-3 bg-gray-200 rounded-full">
                         <div
-                            class="bg-green-500 h-3 rounded-full"
+                            class="h-3 bg-green-500 rounded-full"
                             style="width: 24%"
                         ></div>
                     </div>
@@ -279,19 +334,158 @@
                     </p>
 
                     <!-- CTA -->
-                    <div class="mt-6 text-center">
+                    <div class="flex justify-end mt-6">
                         <button
-                            class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition"
+                            @click="handleDonateClick"
+                            class="px-6 py-3 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700"
                         >
                             Donasi Sekarang
                         </button>
                     </div>
+
+                    <!-- modal belum login -->
+                    <div
+                        v-if="showLoginModal"
+                        class="fixed inset-0 flex items-center justify-center bg-black/50"
+                    >
+                        <div class="bg-white p-6 rounded-lg w-[350px]">
+                            <h2 class="text-lg font-semibold">
+                                Login diperlukan
+                            </h2>
+                            <p class="mt-2 text-sm">
+                                Silakan login untuk melanjutkan donasi
+                            </p>
+                            <div class="flex justify-end gap-2 mt-4">
+                                <button
+                                    @click="showLoginModal = false"
+                                    class="px-3 py-2 bg-gray-200 rounded"
+                                >
+                                    Batal
+                                </button>
+                                <Link href="/login">
+                                    <button
+                                        class="px-3 py-2 text-white bg-blue-500 rounded"
+                                    >
+                                        Login
+                                    </button>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- modal sudah login -->
+                    <div
+                        v-if="showDonateModal"
+                        class="fixed inset-0 flex items-center justify-center bg-black/50"
+                    >
+                        <div class="bg-white p-6 rounded-lg w-[400px]">
+                            <h2 class="text-lg font-semibold">
+                                Konfirmasi Donasi
+                            </h2>
+
+                            <label class="block mt-3 text-sm"
+                                >Pilih Nominal</label
+                            >
+                            <div class="grid grid-cols-2 gap-2 mt-1">
+                                <!-- Tombol preset nominal -->
+                                <button
+                                    v-for="amount in presetAmounts"
+                                    :key="amount"
+                                    @click="toggleAmount(amount)"
+                                    :class="[
+                                        'py-2 border rounded text-center transition',
+                                        selectedAmount === amount
+                                            ? 'bg-green-100 border-green-500 text-green-700 font-semibold'
+                                            : 'hover:bg-gray-100',
+                                    ]"
+                                >
+                                    Rp {{ amount.toLocaleString("id-ID") }}
+                                </button>
+                            </div>
+
+                            <div
+                                class="grid grid-cols-3 gap-2 mt-4"
+                                v-if="!selectedAmount"
+                            >
+                                <p class="py-2 text-center bg-gray-100">atau</p>
+                                <input
+                                    v-model="customAmount"
+                                    type="number"
+                                    placeholder="Nominal lain"
+                                    class="col-span-2 px-2 py-2 border rounded"
+                                    @keypress="
+                                        if (!/[0-9]/.test($event.key))
+                                            $event.preventDefault();
+                                    "
+                                />
+                            </div>
+
+                            <label class="block mt-3 text-sm"
+                                >Pilih Mata Uang</label
+                            >
+                            <select class="w-full py-2 border rounded">
+                                <option value="IDR">IDR (Rupiah)</option>
+                            </select>
+                            <label class="block mt-3 text-sm"
+                                >Pesan (opsional)</label
+                            >
+                            <textarea
+                                class="w-full p-2 border rounded"
+                                rows="3"
+                                placeholder="Tulis pesan..."
+                            ></textarea>
+                            <p
+                                class="mt-8 mb-10 text-sm text-gray-600 text-end"
+                            >
+                                <template v-if="selectedAmount">
+                                    Nominal dipilih:
+                                    <b class="text-xl"
+                                        >Rp
+                                        <span class="text-4xl font-semibold">
+                                            {{
+                                                selectedAmount.toLocaleString(
+                                                    "id-ID"
+                                                )
+                                            }}</span
+                                        ></b
+                                    >
+                                </template>
+                                <template v-else-if="customAmount">
+                                    Nominal custom:
+                                    <b class="text-xl"
+                                        >Rp
+                                        <span class="text-4xl font-semibold">
+                                            {{
+                                                Number(
+                                                    customAmount
+                                                ).toLocaleString("id-ID")
+                                            }}</span
+                                        >
+                                    </b>
+                                </template>
+                            </p>
+
+                            <div class="flex justify-end gap-2 mt-4">
+                                <button
+                                    @click="showDonateModal = false"
+                                    class="px-3 py-2 bg-gray-200 rounded"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    class="px-3 py-2 text-white bg-green-500 rounded"
+                                >
+                                    Lanjutkan Pembayaran
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Full Description -->
-                <div class="bg-white shadow rounded-xl p-6">
-                    <h2 class="text-lg font-bold mb-3">Tentang Program Ini</h2>
-                    <p class="text-gray-700 leading-relaxed">
+                <div class="p-6 bg-white shadow rounded-xl">
+                    <h2 class="mb-3 text-lg font-bold">Tentang Program Ini</h2>
+                    <p class="leading-relaxed text-gray-700">
                         Pada tanggal 12 Juli, gempa bumi berkekuatan 6.5 SR
                         melanda wilayah Sulawesi. Lebih dari
                         <strong>1.200 keluarga</strong> terpaksa mengungsi
@@ -304,11 +498,11 @@
             </div>
         </section>
 
-        <section class="max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-24 mx-auto">
-            <div class="mb-6 sm:mb-10 max-w-2xl text-center mx-auto">
+        <section class="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-24">
+            <div class="max-w-2xl mx-auto mb-6 text-center sm:mb-10">
                 <p class="text-sm text-gray-500">Kebaikan mulai dari anda</p>
                 <h1
-                    class="font-medium text-black text-3xl sm:text-4xl dark:text-white"
+                    class="text-3xl font-medium text-black sm:text-4xl dark:text-white"
                 >
                     Campaign Donasi Lain
                 </h1>
@@ -316,45 +510,45 @@
 
             <!-- Card Grid -->
             <div
-                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12"
+                class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-12"
             >
                 <div
-                    class="group flex flex-col bg-white rounded-2xl shadow hover:shadow-lg transition"
+                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
                 >
                     <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
                         <img
-                            class="w-full h-full object-cover group-hover:scale-105 transition"
+                            class="object-cover w-full h-full transition group-hover:scale-105"
                             src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
                             alt="Gempa Sulawesi"
                         />
                     </div>
-                    <div class="p-4 flex flex-col flex-grow">
+                    <div class="flex flex-col flex-grow p-4">
                         <h3
-                            class="font-semibold text-lg text-gray-900 truncate"
+                            class="text-lg font-semibold text-gray-900 truncate"
                         >
                             Bantuan Gempa Sulawesi
                         </h3>
-                        <p class="text-sm text-gray-600 mt-1 line-clamp-2">
+                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
                             Gempa 6.5 SR melanda Sulawesi, ratusan keluarga
                             kehilangan rumah dan butuh bantuan darurat.
                         </p>
                         <!-- Progress -->
                         <div class="mt-3">
-                            <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="w-full h-2 bg-gray-200 rounded-full">
                                 <div
-                                    class="bg-green-500 h-2 rounded-full"
+                                    class="h-2 bg-green-500 rounded-full"
                                     style="width: 18%"
                                 ></div>
                             </div>
-                            <p class="text-xs mt-1 text-gray-600">
+                            <p class="mt-1 text-xs text-gray-600">
                                 Rp 87.520.000 terkumpul dari Rp 500.000.000
                             </p>
                         </div>
                         <!-- Tombol -->
-                        <div class="mt-auto pt-4">
+                        <div class="pt-4 mt-auto">
                             <a
                                 href="#"
-                                class="w-full flex justify-center items-center py-2 px-4 rounded-xl text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition"
+                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
                             >
                                 Lihat Detail & Donasi
                             </a>
@@ -364,42 +558,42 @@
 
                 <!-- Card 2 -->
                 <div
-                    class="group flex flex-col bg-white rounded-2xl shadow hover:shadow-lg transition"
+                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
                 >
                     <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
                         <img
-                            class="w-full h-full object-cover group-hover:scale-105 transition"
+                            class="object-cover w-full h-full transition group-hover:scale-105"
                             src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
                             alt="Banjir Jakarta"
                         />
                     </div>
-                    <div class="p-4 flex flex-col flex-grow">
+                    <div class="flex flex-col flex-grow p-4">
                         <h3
-                            class="font-semibold text-lg text-gray-900 truncate"
+                            class="text-lg font-semibold text-gray-900 truncate"
                         >
                             Banjir Jakarta
                         </h3>
-                        <p class="text-sm text-gray-600 mt-1 line-clamp-2">
+                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
                             Ribuan warga Jakarta terdampak banjir, membutuhkan
                             makanan, air bersih, dan obat-obatan.
                         </p>
                         <!-- Progress -->
                         <div class="mt-3">
-                            <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="w-full h-2 bg-gray-200 rounded-full">
                                 <div
-                                    class="bg-green-500 h-2 rounded-full"
+                                    class="h-2 bg-green-500 rounded-full"
                                     style="width: 42%"
                                 ></div>
                             </div>
-                            <p class="text-xs mt-1 text-gray-600">
+                            <p class="mt-1 text-xs text-gray-600">
                                 Rp 125.000.000 terkumpul dari Rp 300.000.000
                             </p>
                         </div>
                         <!-- Tombol -->
-                        <div class="mt-auto pt-4">
+                        <div class="pt-4 mt-auto">
                             <a
                                 href="#"
-                                class="w-full flex justify-center items-center py-2 px-4 rounded-xl text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition"
+                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
                             >
                                 Lihat Detail & Donasi
                             </a>
@@ -409,42 +603,42 @@
 
                 <!-- Card 3 -->
                 <div
-                    class="group flex flex-col bg-white rounded-2xl shadow hover:shadow-lg transition"
+                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
                 >
                     <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
                         <img
-                            class="w-full h-full object-cover group-hover:scale-105 transition"
+                            class="object-cover w-full h-full transition group-hover:scale-105"
                             src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
                             alt="Kebakaran Kalimantan"
                         />
                     </div>
-                    <div class="p-4 flex flex-col flex-grow">
+                    <div class="flex flex-col flex-grow p-4">
                         <h3
-                            class="font-semibold text-lg text-gray-900 truncate"
+                            class="text-lg font-semibold text-gray-900 truncate"
                         >
                             Kebakaran Hutan Kalimantan
                         </h3>
-                        <p class="text-sm text-gray-600 mt-1 line-clamp-2">
+                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
                             Asap pekat akibat kebakaran hutan mengancam
                             kesehatan warga sekitar. Mari bantu mereka.
                         </p>
                         <!-- Progress -->
                         <div class="mt-3">
-                            <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="w-full h-2 bg-gray-200 rounded-full">
                                 <div
-                                    class="bg-green-500 h-2 rounded-full"
+                                    class="h-2 bg-green-500 rounded-full"
                                     style="width: 29%"
                                 ></div>
                             </div>
-                            <p class="text-xs mt-1 text-gray-600">
+                            <p class="mt-1 text-xs text-gray-600">
                                 Rp 220.000.000 terkumpul dari Rp 750.000.000
                             </p>
                         </div>
                         <!-- Tombol -->
-                        <div class="mt-auto pt-4">
+                        <div class="pt-4 mt-auto">
                             <a
                                 href="#"
-                                class="w-full flex justify-center items-center py-2 px-4 rounded-xl text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition"
+                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
                             >
                                 Lihat Detail & Donasi
                             </a>
@@ -454,7 +648,7 @@
             </div>
             <!-- End Card Grid -->
 
-            <!-- <div class="mt-10 lg:mt-20 text-center">
+            <!-- <div class="mt-10 text-center lg:mt-20">
                 <a
                     class="relative inline-block font-medium md:text-lg text-black before:absolute before:bottom-0.5 before:start-0 before:-z-1 before:w-full before:h-1 before:bg-blue-400 hover:before:bg-black focus:outline-hidden focus:before:bg-black dark:text-white dark:hover:before:bg-white dark:focus:before:bg-white"
                     href="#"
@@ -466,17 +660,17 @@
     </main>
     <!-- ========== FOOTER ========== -->
     <footer
-        class="mt-auto border-t md:border-t-0 border-gray-200 dark:border-neutral-700"
+        class="mt-auto border-t border-gray-200 md:border-t-0 dark:border-neutral-700"
     >
         <div
-            class="w-full max-w-7xl py-10 md:pt-0 px-4 sm:px-6 lg:px-8 mx-auto"
+            class="w-full px-4 py-10 mx-auto max-w-7xl md:pt-0 sm:px-6 lg:px-8"
         >
             <!-- Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-5">
+            <div class="grid items-center grid-cols-1 gap-5 md:grid-cols-3">
                 <div class="text-center md:text-start">
                     <!-- Logo -->
                     <img
-                        src="../../../public/img/logo.png"
+                        src="../../../../public/img/logo.png"
                         width="50"
                         height="50"
                         alt="Logo"
@@ -491,7 +685,7 @@
                         class="inline-block relative pe-8 last:pe-0 last-of-type:before:hidden before:absolute before:top-1/2 before:end-3 before:-translate-y-1/2 before:content-['/'] before:text-black dark:before:text-white"
                     >
                         <a
-                            class="inline-flex gap-x-2 text-sm text-black hover:text-gray-600 dark:text-white dark:hover:text-neutral-300"
+                            class="inline-flex text-sm text-black gap-x-2 hover:text-gray-600 dark:text-white dark:hover:text-neutral-300"
                             href="#"
                         >
                             Donasi
@@ -501,7 +695,7 @@
                         class="inline-block relative pe-8 last:pe-0 last-of-type:before:hidden before:absolute before:top-1/2 before:end-3 before:-translate-y-1/2 before:content-['/'] before:text-black dark:before:text-white"
                     >
                         <a
-                            class="inline-flex gap-x-2 text-sm text-black hover:text-gray-600 dark:text-white dark:hover:text-neutral-300"
+                            class="inline-flex text-sm text-black gap-x-2 hover:text-gray-600 dark:text-white dark:hover:text-neutral-300"
                             href="#"
                         >
                             Tentang Kami
@@ -511,9 +705,9 @@
                 <!-- End Col -->
 
                 <!-- Social Brands -->
-                <div class="text-center md:text-end space-x-2">
+                <div class="space-x-2 text-center md:text-end">
                     <a
-                        class="size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-black hover:text-gray-600 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:text-neutral-400"
+                        class="inline-flex items-center justify-center text-sm font-semibold text-black border border-transparent rounded-full size-8 gap-x-2 hover:text-gray-600 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:text-neutral-400"
                         href="#"
                     >
                         <svg
@@ -530,7 +724,7 @@
                         </svg>
                     </a>
                     <a
-                        class="size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-black hover:text-gray-600 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:text-neutral-400"
+                        class="inline-flex items-center justify-center text-sm font-semibold text-black border border-transparent rounded-full size-8 gap-x-2 hover:text-gray-600 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:text-neutral-400"
                         href="#"
                     >
                         <svg
@@ -547,7 +741,7 @@
                         </svg>
                     </a>
                     <a
-                        class="size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-black hover:text-gray-600 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:text-neutral-400"
+                        class="inline-flex items-center justify-center text-sm font-semibold text-black border border-transparent rounded-full size-8 gap-x-2 hover:text-gray-600 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:text-neutral-400"
                         href="#"
                     >
                         <svg
@@ -564,7 +758,7 @@
                         </svg>
                     </a>
                     <a
-                        class="size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-black hover:text-gray-600 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:text-neutral-400"
+                        class="inline-flex items-center justify-center text-sm font-semibold text-black border border-transparent rounded-full size-8 gap-x-2 hover:text-gray-600 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:text-neutral-400"
                         href="#"
                     >
                         <svg
@@ -587,3 +781,39 @@
         </div>
     </footer>
 </template>
+
+<script setup>
+import { ref } from "vue";
+import { Link, usePage } from "@inertiajs/vue3";
+
+const page = usePage();
+const showLoginModal = ref(false);
+const showDonateModal = ref(false);
+const authUser = page.props.auth.user ?? null;
+const userRole = page.props.auth.user.role ?? null;
+
+function handleDonateClick() {
+    console.log(authUser);
+    console.log(userRole);
+    if (!authUser || userRole !== "donor") {
+        showLoginModal.value = true;
+    } else if (userRole === "donor") {
+        showDonateModal.value = true;
+    } else {
+        alert("Hanya donor yang bisa berdonasi.");
+    }
+}
+const selectedAmount = ref(null);
+const customAmount = ref("");
+
+const presetAmounts = [50000, 75000, 100000, 150000];
+
+function toggleAmount(amount) {
+    if (selectedAmount.value === amount) {
+        selectedAmount.value = null;
+    } else {
+        selectedAmount.value = amount;
+        customAmount.value = "";
+    }
+}
+</script>

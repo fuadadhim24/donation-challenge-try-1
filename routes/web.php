@@ -15,7 +15,8 @@ use App\Http\Controllers\ProfileController;
 */
 
 Route::get('/', fn() => Inertia::render('welcome'))->name('home');
-Route::get('/detail-donation', fn() => Inertia::render('project/detail'))->name('detail-donation');
+Route::get('/detail-donasi', fn() => Inertia::render('project/detail'))->name('detail-donation');
+Route::get('/daftar-donasi', fn() => Inertia::render('project/donations'))->name('list-donation');
 
 Route::get('/test', fn() => Inertia::render('test'))->name('test');
 Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
