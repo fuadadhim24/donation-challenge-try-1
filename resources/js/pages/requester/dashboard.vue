@@ -117,6 +117,32 @@ onMounted(() => {
 function cleanImageUrl(url) {
     return url?.replace("requester/requester", "requester/");
 }
+function deleteProject(id) {
+    if (!confirm("Yakin ingin menghapus project ini?")) return;
+
+    axios
+        .delete(`/projects/${id}`, {
+            headers: {
+                "X-CSRF-TOKEN": document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content"),
+            },
+        })
+        .then(() => {
+            router.reload();
+        })
+        .catch((err) => {
+            console.error("Gagal hapus project:", err);
+        });
+}
+
+const showDetailModal = ref(false);
+const selectedProject = ref(null);
+
+function openProjectDetail(project) {
+    selectedProject.value = project;
+    showDetailModal.value = true;
+}
 </script>
 
 <template>
@@ -360,6 +386,97 @@ function cleanImageUrl(url) {
     </header>
     <!-- ========== END HEADER ========== -->
     <!-- ========== MAIN CONTENT ========== -->
+
+    <!-- Modal -->
+    <div v-if="showDetailModal">
+        <!-- Overlay -->
+        <div class="fixed inset-0 bg-black/50 z-[90]" />
+
+        <!-- Modal Content -->
+        <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+                class="relative w-full max-w-xl bg-white rounded-2xl shadow-xl overflow-hidden dark:bg-neutral-800"
+            >
+                <!-- Gambar -->
+                <div class="overflow-hidden max-h-[250px]">
+                    <img
+                        v-if="selectedProject?.images?.length"
+                        :src="`/${cleanImageUrl(
+                            selectedProject.images[0]?.url
+                        )}`"
+                        alt="Project Image"
+                        class="object-cover w-full h-full"
+                    />
+                </div>
+
+                <!-- Konten -->
+                <div class="p-6 space-y-3">
+                    <h3 class="text-xl font-bold text-gray-900">
+                        {{ selectedProject.name }}
+                    </h3>
+
+                    <p class="text-sm text-gray-600 whitespace-pre-line">
+                        {{ selectedProject.description }}
+                    </p>
+
+                    <!-- Progress Bar -->
+                    <div>
+                        <div class="w-full h-2 bg-gray-200 rounded-full">
+                            <div
+                                class="h-2 bg-green-500 rounded-full"
+                                :style="`width: ${
+                                    (selectedProject.collection_amount /
+                                        selectedProject.target_amount) *
+                                    100
+                                }%`"
+                            ></div>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-600">
+                            Rp
+                            {{
+                                selectedProject.collection_amount.toLocaleString(
+                                    "id-ID"
+                                )
+                            }}
+                            terkumpul dari Rp
+                            {{
+                                selectedProject.target_amount.toLocaleString(
+                                    "id-ID"
+                                )
+                            }}
+                        </p>
+                    </div>
+
+                    <!-- Info Lain -->
+                    <div class="text-sm text-gray-700 space-y-1">
+                        <p>
+                            <strong>Status:</strong>
+                            {{ selectedProject.status }}
+                        </p>
+                        <p>
+                            <strong>Dibuat:</strong>
+                            {{
+                                new Date(
+                                    selectedProject.created_at
+                                ).toLocaleString("id-ID")
+                            }}
+                        </p>
+                    </div>
+
+                    <!-- Tombol Tutup -->
+                    <div class="flex justify-end pt-4">
+                        <button
+                            @click="showDetailModal = false"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Breadcrumb -->
     <div
         class="sticky inset-x-0 top-0 z-20 px-4 bg-white border-gray-200 border-y sm:px-6 lg:px-8 lg:hidden dark:bg-neutral-800 dark:border-neutral-700"
@@ -1047,13 +1164,17 @@ function cleanImageUrl(url) {
                                             class="px-6 py-4 text-right whitespace-nowrap"
                                         >
                                             <button
-                                                @click="goDetail(project.id)"
+                                                @click="
+                                                    openProjectDetail(project)
+                                                "
                                                 class="inline-flex items-center mx-4 text-sm font-medium text-blue-600 gap-x-1 hover:underline dark:text-blue-400"
                                             >
                                                 Lihat Detail
                                             </button>
                                             <button
-                                                @click="goDetail(project.id)"
+                                                @click="
+                                                    deleteProject(project.id)
+                                                "
                                                 class="inline-flex items-center text-sm font-medium text-red-600 gap-x-1 hover:underline dark:text-blue-400"
                                             >
                                                 Hapus

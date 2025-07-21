@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Inertia\Inertia;
 
 class ProjectController extends Controller
@@ -33,5 +34,27 @@ class ProjectController extends Controller
             'project' => $project,
             'relatedProjects' => $relatedProject,
         ]);
+    }
+    public function destroy($id)
+    {
+        $project = Project::findOrFail($id);
+
+        if ($project->requester_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        foreach ($project->images as $img) {
+            $path = public_path($img->url);
+
+            if (File::exists($path)) {
+                File::delete($path);
+            }
+
+            $img->delete();
+        }
+
+        $project->delete();
+
+        return response()->json(['message' => 'Project deleted']);
     }
 }

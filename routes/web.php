@@ -53,4 +53,5 @@ Route::middleware(['auth', 'role:requester'])->group(function () {
     Route::get('/requester/dashboard', [RequesterController::class, 'index'])
         ->name('requester.dashboard');
     Route::post('/add-project', [RequesterController::class, 'store'])->name('project.store');
+    Route::delete('/projects/{id}', [ProjectController::class, 'destroy']);
 });
