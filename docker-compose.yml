@@ -1,0 +1,44 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: docker/php.dockerfile
+        container_name: donation-app
+        volumes:
+            - .:/var/www
+        depends_on:
+            - mysql
+        ports:
+            - "8000:8000"
+        environment:
+            DB_HOST: mysql
+            DB_PORT: 3306
+            DB_DATABASE: donation_hub
+            DB_USERNAME: root
+            DB_PASSWORD: root
+        command: bash -c "php artisan serve --host=0.0.0.0 --port=8000"
+
+    mysql:
+        image: mysql:8.0
+        container_name: donation-mysql
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_DATABASE: donation_hub
+            MYSQL_ROOT_PASSWORD: root
+        volumes:
+            - dbdata:/var/lib/mysql
+
+    vite:
+        build:
+            context: .
+            dockerfile: docker/node.dockerfile
+        container_name: donation-vite
+        volumes:
+            - .:/app
+        ports:
+            - "5173:5173"
+        command: bash -c "npm run dev"
+
+volumes:
+    dbdata:
