@@ -6,6 +6,7 @@ use App\Models\Donation;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class DonationController extends Controller
 {

@@ -163,7 +163,7 @@
                                 "
                                 class="block w-full px-4 py-2 text-left text-gray-700 rounded hover:bg-gray-100"
                             >
-                                Dashboard
+                                Beranda
                             </a>
                             <Link
                                 href="/logout"
@@ -280,7 +280,7 @@
         <!-- Hero -->
         <section class="px-4 sm:px-6 lg:px-8">
             <div
-                class="h-120 md:h-[80dvh] flex flex-col bg-[linear-gradient(to_top,rgba(0,0,0,0.7),rgba(0,0,0,0))] bg-[url('img/welcome/hero-bg.jpg')] bg-cover bg-center bg-no-repeat rounded-2xl"
+                class="h-120 md:h-[80dvh] flex flex-col bg-[url('./img/welcome/hero-bg.jpg')] bg-cover bg-center bg-no-repeat rounded-2xl"
             >
                 <div
                     class="w-2/3 pb-5 mt-auto md:max-w-lg ps-5 md:ps-10 md:pb-10"
@@ -420,7 +420,7 @@
                 >
                     <img
                         class="absolute inset-0 object-cover size-full rounded-2xl"
-                        src="https://images.unsplash.com/photo-1507914464562-6ff4ac29692f?q=80&w=768&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                        src="/public/img/welcome/testi-bg.jpg"
                         alt="Testimonials Image"
                     />
                 </div>

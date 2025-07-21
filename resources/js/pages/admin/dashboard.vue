@@ -636,7 +636,7 @@ onMounted(() => {
                                     "
                                     class="block w-full px-4 py-2 text-left text-gray-700 rounded hover:bg-gray-100"
                                 >
-                                    Dashboard
+                                    Beranda
                                 </a>
                                 <button
                                     @click="logout"
@@ -729,7 +729,7 @@ onMounted(() => {
                     class="text-sm font-semibold text-gray-800 truncate dark:text-neutral-400"
                     aria-current="page"
                 >
-                    Dashboard
+                    Beranda
                 </li>
             </ol>
             <!-- End Breadcrumb -->
@@ -822,7 +822,7 @@ onMounted(() => {
                                     />
                                     <polyline points="9 22 9 12 15 12 15 22" />
                                 </svg>
-                                Dashboard
+                                Beranda
                             </a>
                         </li>
 

@@ -163,7 +163,7 @@
                                 "
                                 class="block w-full px-4 py-2 text-left text-gray-700 rounded hover:bg-gray-100"
                             >
-                                Dashboard
+                                Beranda
                             </a>
                             <Link
                                 href="/logout"
