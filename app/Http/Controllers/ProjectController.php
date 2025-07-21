@@ -12,7 +12,9 @@ class ProjectController extends Controller
 {
     public function index()
     {
-        $projects = Project::latest()->take(6)->get();
+        $projects = Project::latest()->take(6)
+            ->orderBy('created_at', 'desc')->with('images')
+            ->get();
 
         return Inertia::render('welcome', [
             'projects' => $projects
@@ -21,7 +23,9 @@ class ProjectController extends Controller
 
     public function listProject()
     {
-        $projects = Project::latest()->take(6)->get();
+        $projects = Project::latest()->take(6)
+            ->orderBy('created_at', 'desc')->with('images')
+            ->get();
 
         return Inertia::render('project/donations', [
             'projects' => $projects
@@ -29,7 +33,13 @@ class ProjectController extends Controller
     }
     public function donate(Project $project)
     {
-        $relatedProject = Project::where('id', '!=', $project->id)->take(6)->get();
+        $project->load('images');
+        $relatedProject = Project::where('id', '!=', $project->id)
+            ->latest()
+            ->take(6)
+            ->orderBy('created_at', 'desc')
+            ->with('images')
+            ->get();
         return Inertia::render('project/detail', [
             'project' => $project,
             'relatedProjects' => $relatedProject,
@@ -56,5 +66,16 @@ class ProjectController extends Controller
         $project->delete();
 
         return response()->json(['message' => 'Project deleted']);
+    }
+    public function updateStatus(Request $request, Project $project)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+        ]);
+
+        $project->status = $request->status;
+        $project->save();
+
+        return response()->json(['message' => 'Status updated']);
     }
 }

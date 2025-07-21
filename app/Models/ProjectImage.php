@@ -20,4 +20,8 @@ class ProjectImage extends Model
     {
         return $this->belongsTo(Project::class);
     }
+    public function getUrlAttribute($value)
+    {
+        return asset($value);
+    }
 }

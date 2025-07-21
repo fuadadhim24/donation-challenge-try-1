@@ -2,13 +2,89 @@
 import { Head } from "@inertiajs/vue3";
 import { ref, onMounted } from "vue";
 import { useScriptTag } from "@vueuse/core";
-import { usePage } from "@inertiajs/vue3";
-import { router } from "@inertiajs/vue3";
+import { usePage, router, useForm } from "@inertiajs/vue3";
+import axios from "axios";
 
 const page = usePage();
 const authUser = page.props.auth.user ?? null;
 const userRole = authUser ? authUser.role : null;
 const isDark = ref(false);
+
+defineProps({
+    projects: Array,
+    totalProjects: Number,
+    activeProjects: Number,
+    pendingProjects: Number,
+    rejectedProjects: Number,
+    finishedProjects: Number,
+    totalCollected: Number,
+});
+
+const showModal = ref(false);
+
+const form = useForm({
+    title: "",
+    short_description: "",
+    target_amount: "",
+    thumbnail: null,
+});
+
+function handleFile(e) {
+    form.images = Array.from(e.target.files);
+}
+
+function submitProject() {
+    let formData = new FormData();
+    formData.append("name", form.name);
+    formData.append("description", form.description);
+    formData.append("target_amount", form.target_amount);
+    formData.append("currency", "IDR");
+    formData.append("status", "approved");
+
+    // masukkan semua file
+    form.images.forEach((file, i) => {
+        formData.append(`images[${i}]`, file);
+    });
+    console.log(formData);
+
+    axios
+        .post("/admin/add-project", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                "X-CSRF-TOKEN": document.querySelector(
+                    'meta[name="csrf-token"]'
+                ).content,
+            },
+        })
+        .then((res) => {
+            console.log("Berhasil buat campaign", res.data);
+            showModal.value = false;
+            form.reset();
+            router.reload();
+        })
+        .catch((err) => console.log(err.response.data));
+}
+function updateStatus(newStatus) {
+    if (!selectedProject.value) return;
+
+    axios
+        .put(`/admin/projects/${selectedProject.value.id}/status`, {
+            status: newStatus,
+        })
+        .then((res) => {
+            selectedProject.value.status = newStatus;
+            if (newStatus === "approved") {
+                showDetailModal.value = false;
+            }
+            alert(`Status berhasil diubah ke ${newStatus}`);
+            router.reload();
+        })
+        .catch((err) => {
+            console.error("Gagal update status:", err);
+            alert("Terjadi kesalahan saat mengubah status.");
+        });
+}
+
 function setBodyClass(...classes) {
     document.body.className = "";
     document.body.classList.add(...classes);
@@ -347,7 +423,54 @@ function logout() {
     router.post(route("logout"));
 }
 
-const title = "Tailwind CSS Admin Template | Preline UI";
+const title = "Dashboard Admin | Donation Hub";
+const getProgress = (collected, target) => {
+    if (!target || target === 0) return 0;
+    return Math.min(Math.round((collected / target) * 100), 100);
+};
+function cleanImageUrl(url) {
+    return url?.replace("requester/requester", "requester/");
+}
+const getStatusBadge = (status) => {
+    switch (status.toLowerCase()) {
+        case "approved":
+            return "bg-green-100 text-green-800 dark:bg-green-500/10 dark:text-green-500";
+        case "completed":
+            return "bg-gray-100 text-green-800 dark:bg-green-500/10 dark:text-green-500";
+        case "need_review":
+            return "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/10 dark:text-yellow-500";
+        case "rejected":
+            return "bg-red-100 text-red-800 dark:bg-red-500/10 dark:text-red-500";
+        default:
+            return "bg-gray-100 text-gray-800 dark:bg-gray-500/10 dark:text-gray-500";
+    }
+};
+const showDetailModal = ref(false);
+const selectedProject = ref(null);
+
+function openProjectDetail(project) {
+    selectedProject.value = project;
+    showDetailModal.value = true;
+}
+function deleteProject(id) {
+    if (!confirm("Yakin ingin menghapus project ini?")) return;
+
+    axios
+        .delete(`/admin/projects/${id}`, {
+            headers: {
+                "X-CSRF-TOKEN": document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content"),
+            },
+        })
+        .then(() => {
+            router.reload();
+        })
+        .catch((err) => {
+            console.error("Gagal hapus project:", err);
+        });
+}
+
 onMounted(() => {
     setBodyClass("bg-gray-50", "dark:bg-neutral-900");
     initCharts();
@@ -393,43 +516,16 @@ onMounted(() => {
             <div class="flex items-center me-5 lg:me-0 lg:hidden">
                 <!-- Logo -->
                 <a
-                    class="flex-none inline-block text-xl font-semibold rounded-md focus:outline-hidden focus:opacity-80"
+                    class="flex-none inline-block text-xl font-semibold rod-md focus:outline-hidden focus:opacity-80"
                     href="#"
                     aria-label="Preline"
                 >
-                    <svg
-                        class="h-auto w-28"
-                        width="116"
-                        height="32"
-                        viewBox="0 0 116 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <path
-                            d="M33.5696 30.8182V11.3182H37.4474V13.7003H37.6229C37.7952 13.3187 38.0445 12.9309 38.3707 12.5369C38.7031 12.1368 39.134 11.8045 39.6634 11.5398C40.1989 11.2689 40.8636 11.1335 41.6577 11.1335C42.6918 11.1335 43.6458 11.4044 44.5199 11.946C45.3939 12.4815 46.0926 13.291 46.6158 14.3743C47.139 15.4515 47.4006 16.8026 47.4006 18.4276C47.4006 20.0095 47.1451 21.3452 46.6342 22.4347C46.1295 23.518 45.4401 24.3397 44.5661 24.8999C43.6982 25.4538 42.7256 25.7308 41.6484 25.7308C40.8852 25.7308 40.2358 25.6046 39.7003 25.3523C39.1709 25.0999 38.737 24.7829 38.3984 24.4013C38.0599 24.0135 37.8014 23.6226 37.6229 23.2287H37.5028V30.8182H33.5696ZM37.4197 18.4091C37.4197 19.2524 37.5367 19.9879 37.7706 20.6158C38.0045 21.2436 38.343 21.733 38.7862 22.0838C39.2294 22.4285 39.768 22.6009 40.402 22.6009C41.0421 22.6009 41.5838 22.4254 42.027 22.0746C42.4702 21.7176 42.8056 21.2251 43.0334 20.5973C43.2673 19.9633 43.3842 19.2339 43.3842 18.4091C43.3842 17.5904 43.2704 16.8703 43.0426 16.2486C42.8149 15.6269 42.4794 15.1406 42.0362 14.7898C41.593 14.4389 41.0483 14.2635 40.402 14.2635C39.7618 14.2635 39.2202 14.4328 38.777 14.7713C38.34 15.1098 38.0045 15.59 37.7706 16.2116C37.5367 16.8333 37.4197 17.5658 37.4197 18.4091ZM49.2427 25.5V11.3182H53.0559V13.7926H53.2037C53.4622 12.9124 53.8961 12.2476 54.5055 11.7983C55.1149 11.3428 55.8166 11.1151 56.6106 11.1151C56.8076 11.1151 57.02 11.1274 57.2477 11.152C57.4754 11.1766 57.6755 11.2105 57.8478 11.2536V14.7436C57.6632 14.6882 57.4077 14.639 57.0815 14.5959C56.7553 14.5528 56.4567 14.5312 56.1859 14.5312C55.6073 14.5312 55.0903 14.6574 54.6348 14.9098C54.1854 15.156 53.8284 15.5007 53.5638 15.9439C53.3052 16.3871 53.176 16.898 53.176 17.4766V25.5H49.2427ZM64.9043 25.777C63.4455 25.777 62.1898 25.4815 61.1373 24.8906C60.0909 24.2936 59.2845 23.4503 58.7182 22.3608C58.1519 21.2652 57.8688 19.9695 57.8688 18.4737C57.8688 17.0149 58.1519 15.7346 58.7182 14.6328C59.2845 13.531 60.0816 12.6723 61.1096 12.0568C62.1437 11.4413 63.3563 11.1335 64.7474 11.1335C65.683 11.1335 66.5539 11.2843 67.3603 11.5859C68.1728 11.8814 68.8806 12.3277 69.4839 12.9247C70.0932 13.5218 70.5672 14.2727 70.9057 15.1776C71.2443 16.0762 71.4135 17.1288 71.4135 18.3352V19.4155H59.4384V16.978H67.7111C67.7111 16.4117 67.588 15.91 67.3418 15.473C67.0956 15.036 66.754 14.6944 66.317 14.4482C65.8861 14.1958 65.3844 14.0696 64.812 14.0696C64.2149 14.0696 63.6856 14.2081 63.2239 14.4851C62.7684 14.7559 62.4114 15.1222 62.1529 15.5838C61.8944 16.0393 61.762 16.5471 61.7559 17.1072V19.4247C61.7559 20.1264 61.8851 20.7327 62.1437 21.2436C62.4083 21.7545 62.7807 22.1484 63.2608 22.4254C63.741 22.7024 64.3103 22.8409 64.9689 22.8409C65.406 22.8409 65.8061 22.7794 66.1692 22.6562C66.5324 22.5331 66.8432 22.3485 67.1018 22.1023C67.3603 21.8561 67.5572 21.5545 67.6927 21.1974L71.3304 21.4375C71.1458 22.3116 70.7672 23.0748 70.1948 23.7273C69.6285 24.3736 68.896 24.8783 67.9974 25.2415C67.1048 25.5985 66.0738 25.777 64.9043 25.777ZM77.1335 6.59091V25.5H73.2003V6.59091H77.1335ZM79.5043 25.5V11.3182H83.4375V25.5H79.5043ZM81.4801 9.49006C80.8954 9.49006 80.3937 9.29616 79.9752 8.90838C79.5628 8.51444 79.3566 8.04356 79.3566 7.49574C79.3566 6.95407 79.5628 6.48935 79.9752 6.10156C80.3937 5.70762 80.8954 5.51065 81.4801 5.51065C82.0649 5.51065 82.5635 5.70762 82.9759 6.10156C83.3944 6.48935 83.6037 6.95407 83.6037 7.49574C83.6037 8.04356 83.3944 8.51444 82.9759 8.90838C82.5635 9.29616 82.0649 9.49006 81.4801 9.49006ZM89.7415 17.3011V25.5H85.8083V11.3182H89.5569V13.8203H89.723C90.037 12.9955 90.5632 12.343 91.3019 11.8629C92.0405 11.3767 92.9361 11.1335 93.9887 11.1335C94.9735 11.1335 95.8322 11.349 96.5647 11.7798C97.2971 12.2107 97.8665 12.8262 98.2728 13.6264C98.679 14.4205 98.8821 15.3684 98.8821 16.4702V25.5H94.9489V17.1719C94.9551 16.304 94.7335 15.6269 94.2841 15.1406C93.8348 14.6482 93.2162 14.402 92.4283 14.402C91.8989 14.402 91.4311 14.5159 91.0249 14.7436C90.6248 14.9714 90.3109 15.3037 90.0831 15.7408C89.8615 16.1716 89.7477 16.6918 89.7415 17.3011ZM107.665 25.777C106.206 25.777 104.951 25.4815 103.898 24.8906C102.852 24.2936 102.045 23.4503 101.479 22.3608C100.913 21.2652 100.63 19.9695 100.63 18.4737C100.63 17.0149 100.913 15.7346 101.479 14.6328C102.045 13.531 102.842 12.6723 103.87 12.0568C104.905 11.4413 106.117 11.1335 107.508 11.1335C108.444 11.1335 109.315 11.2843 110.121 11.5859C110.934 11.8814 111.641 12.3277 112.245 12.9247C112.854 13.5218 113.328 14.2727 113.667 15.1776C114.005 16.0762 114.174 17.1288 114.174 18.3352V19.4155H102.199V16.978H110.472C110.472 16.4117 110.349 15.91 110.103 15.473C109.856 15.036 109.515 14.6944 109.078 14.4482C108.647 14.1958 108.145 14.0696 107.573 14.0696C106.976 14.0696 106.446 14.2081 105.985 14.4851C105.529 14.7559 105.172 15.1222 104.914 15.5838C104.655 16.0393 104.523 16.5471 104.517 17.1072V19.4247C104.517 20.1264 104.646 20.7327 104.905 21.2436C105.169 21.7545 105.542 22.1484 106.022 22.4254C106.502 22.7024 107.071 22.8409 107.73 22.8409C108.167 22.8409 108.567 22.7794 108.93 22.6562C109.293 22.5331 109.604 22.3485 109.863 22.1023C110.121 21.8561 110.318 21.5545 110.454 21.1974L114.091 21.4375C113.907 22.3116 113.528 23.0748 112.956 23.7273C112.389 24.3736 111.657 24.8783 110.758 25.2415C109.866 25.5985 108.835 25.777 107.665 25.777Z"
-                            class="fill-blue-600 dark:fill-white"
-                            fill="currentColor"
-                        />
-                        <path
-                            d="M1 29.5V16.5C1 9.87258 6.37258 4.5 13 4.5C19.6274 4.5 25 9.87258 25 16.5C25 23.1274 19.6274 28.5 13 28.5H12"
-                            class="stroke-blue-600 dark:stroke-white"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        />
-                        <path
-                            d="M5 29.5V16.66C5 12.1534 8.58172 8.5 13 8.5C17.4183 8.5 21 12.1534 21 16.66C21 21.1666 17.4183 24.82 13 24.82H12"
-                            class="stroke-blue-600 dark:stroke-white"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        />
-                        <circle
-                            cx="13"
-                            cy="16.5214"
-                            r="5"
-                            class="fill-blue-600 dark:fill-white"
-                            fill="currentColor"
-                        />
-                    </svg>
+                    <img
+                        src="../../../../public/img/logo.png"
+                        width="50"
+                        height="50"
+                        alt="Logo"
+                    />
                 </a>
                 <!-- End Logo -->
             </div>
@@ -668,6 +764,199 @@ onMounted(() => {
     <!-- ========== END HEADER ========== -->
 
     <!-- ========== MAIN CONTENT ========== -->
+    <!-- modal -->
+    <div v-if="showModal">
+        <div class="fixed inset-0 bg-black/50 z-[90]" />
+        <div class="fixed inset-0 z-[100] flex items-center justify-center">
+            <div
+                class="relative w-full max-w-lg p-6 bg-white rounded-lg shadow-lg dark:bg-neutral-800"
+            >
+                <h3 class="mb-4 text-lg font-semibold">Buat Campaign Donasi</h3>
+
+                <!-- Form -->
+                <form @submit.prevent="submitProject" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium"
+                            ><span class="text-red-600">*</span>Judul</label
+                        >
+                        <input
+                            v-model="form.name"
+                            class="w-full p-2 mt-1 border rounded"
+                            type="text"
+                            placeholder="contoh: Peduli Bencana Banjir Sulawesi"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium"
+                            >Deskripsi Singkat</label
+                        >
+                        <textarea
+                            v-model="form.description"
+                            class="w-full p-2 mt-1 border rounded"
+                        ></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium"
+                            ><span class="text-red-600">*</span>Target
+                            Dana</label
+                        >
+                        <input
+                            v-model="form.target_amount"
+                            class="w-full p-2 mt-1 border rounded"
+                            type="number"
+                            placeholder="contoh: 5000000"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium"
+                            ><span class="text-red-600">*</span>Thumbnail</label
+                        >
+                        <input
+                            class="w-full px-4 py-4 mt-1 text-gray-500 border border-gray-500 rounded-md"
+                            type="file"
+                            @change="handleFile"
+                        />
+                    </div>
+
+                    <!-- Action -->
+                    <div class="flex justify-end mt-4 gap-x-2">
+                        <button
+                            type="button"
+                            @click="showModal = false"
+                            class="px-4 py-2 bg-gray-200 rounded"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="form.processing"
+                            class="px-4 py-2 text-white bg-blue-600 rounded"
+                        >
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal detail -->
+    <div v-if="showDetailModal">
+        <!-- Overlay -->
+        <div class="fixed inset-0 bg-black/50 z-[90]" />
+
+        <!-- Modal Content -->
+        <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+                class="relative w-full max-w-xl overflow-hidden bg-white shadow-xl rounded-2xl dark:bg-neutral-800"
+            >
+                <!-- Gambar -->
+                <div class="overflow-hidden max-h-[250px]">
+                    <img
+                        v-if="selectedProject?.images?.length"
+                        :src="`/${cleanImageUrl(
+                            selectedProject.images[0]?.url
+                        )}`"
+                        alt="Project Image"
+                        class="object-cover w-full h-full"
+                    />
+                </div>
+
+                <!-- Konten -->
+                <div class="p-6 space-y-3">
+                    <h3 class="text-xl font-bold text-gray-900">
+                        {{ selectedProject.name }}
+                    </h3>
+
+                    <p class="text-sm text-gray-600 whitespace-pre-line">
+                        {{ selectedProject.description }}
+                    </p>
+
+                    <!-- Progress Bar -->
+                    <div>
+                        <div class="w-full h-2 bg-gray-200 rounded-full">
+                            <div
+                                class="h-2 bg-green-500 rounded-full"
+                                :style="`width: ${
+                                    (selectedProject.collection_amount /
+                                        selectedProject.target_amount) *
+                                    100
+                                }%`"
+                            ></div>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-600">
+                            Rp
+                            {{
+                                selectedProject.collection_amount.toLocaleString(
+                                    "id-ID"
+                                )
+                            }}
+                            terkumpul dari Rp
+                            {{
+                                selectedProject.target_amount.toLocaleString(
+                                    "id-ID"
+                                )
+                            }}
+                        </p>
+                    </div>
+
+                    <!-- Info Lain -->
+                    <div class="space-y-1 text-sm text-gray-700">
+                        <p>
+                            <strong>Status sekarang:</strong>
+                            {{ selectedProject.status }}
+                        </p>
+
+                        <p>
+                            <strong>Dibuat:</strong>
+                            {{
+                                new Date(
+                                    selectedProject.created_at
+                                ).toLocaleString("id-ID")
+                            }}
+                        </p>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center gap-2 mt-2">
+                            <button
+                                class="px-3 py-1 text-sm font-medium text-white bg-green-500 rounded hover:bg-green-600"
+                                @click="updateStatus('approved')"
+                                :disabled="
+                                    selectedProject.status === 'approved'
+                                "
+                            >
+                                Setujui
+                            </button>
+
+                            <button
+                                class="px-3 py-1 text-sm font-medium text-white bg-red-500 rounded hover:bg-red-600"
+                                @click="updateStatus('rejected')"
+                                :disabled="
+                                    selectedProject.status === 'rejected'
+                                "
+                            >
+                                Tolak
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Tutup -->
+                    <div class="flex justify-end pt-4">
+                        <button
+                            @click="showDetailModal = false"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Breadcrumb -->
     <div
         class="sticky inset-x-0 top-0 z-20 px-4 bg-white border-gray-200 border-y sm:px-6 lg:px-8 lg:hidden dark:bg-neutral-800 dark:border-neutral-700"
@@ -753,39 +1042,12 @@ onMounted(() => {
                     href="#"
                     aria-label="Preline"
                 >
-                    <svg
-                        class="h-auto w-28"
-                        width="116"
-                        height="32"
-                        viewBox="0 0 116 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <path
-                            d="M33.5696 30.8182V11.3182H37.4474V13.7003H37.6229C37.7952 13.3187 38.0445 12.9309 38.3707 12.5369C38.7031 12.1368 39.134 11.8045 39.6634 11.5398C40.1989 11.2689 40.8636 11.1335 41.6577 11.1335C42.6918 11.1335 43.6458 11.4044 44.5199 11.946C45.3939 12.4815 46.0926 13.291 46.6158 14.3743C47.139 15.4515 47.4006 16.8026 47.4006 18.4276C47.4006 20.0095 47.1451 21.3452 46.6342 22.4347C46.1295 23.518 45.4401 24.3397 44.5661 24.8999C43.6982 25.4538 42.7256 25.7308 41.6484 25.7308C40.8852 25.7308 40.2358 25.6046 39.7003 25.3523C39.1709 25.0999 38.737 24.7829 38.3984 24.4013C38.0599 24.0135 37.8014 23.6226 37.6229 23.2287H37.5028V30.8182H33.5696ZM37.4197 18.4091C37.4197 19.2524 37.5367 19.9879 37.7706 20.6158C38.0045 21.2436 38.343 21.733 38.7862 22.0838C39.2294 22.4285 39.768 22.6009 40.402 22.6009C41.0421 22.6009 41.5838 22.4254 42.027 22.0746C42.4702 21.7176 42.8056 21.2251 43.0334 20.5973C43.2673 19.9633 43.3842 19.2339 43.3842 18.4091C43.3842 17.5904 43.2704 16.8703 43.0426 16.2486C42.8149 15.6269 42.4794 15.1406 42.0362 14.7898C41.593 14.4389 41.0483 14.2635 40.402 14.2635C39.7618 14.2635 39.2202 14.4328 38.777 14.7713C38.34 15.1098 38.0045 15.59 37.7706 16.2116C37.5367 16.8333 37.4197 17.5658 37.4197 18.4091ZM49.2427 25.5V11.3182H53.0559V13.7926H53.2037C53.4622 12.9124 53.8961 12.2476 54.5055 11.7983C55.1149 11.3428 55.8166 11.1151 56.6106 11.1151C56.8076 11.1151 57.02 11.1274 57.2477 11.152C57.4754 11.1766 57.6755 11.2105 57.8478 11.2536V14.7436C57.6632 14.6882 57.4077 14.639 57.0815 14.5959C56.7553 14.5528 56.4567 14.5312 56.1859 14.5312C55.6073 14.5312 55.0903 14.6574 54.6348 14.9098C54.1854 15.156 53.8284 15.5007 53.5638 15.9439C53.3052 16.3871 53.176 16.898 53.176 17.4766V25.5H49.2427ZM64.9043 25.777C63.4455 25.777 62.1898 25.4815 61.1373 24.8906C60.0909 24.2936 59.2845 23.4503 58.7182 22.3608C58.1519 21.2652 57.8688 19.9695 57.8688 18.4737C57.8688 17.0149 58.1519 15.7346 58.7182 14.6328C59.2845 13.531 60.0816 12.6723 61.1096 12.0568C62.1437 11.4413 63.3563 11.1335 64.7474 11.1335C65.683 11.1335 66.5539 11.2843 67.3603 11.5859C68.1728 11.8814 68.8806 12.3277 69.4839 12.9247C70.0932 13.5218 70.5672 14.2727 70.9057 15.1776C71.2443 16.0762 71.4135 17.1288 71.4135 18.3352V19.4155H59.4384V16.978H67.7111C67.7111 16.4117 67.588 15.91 67.3418 15.473C67.0956 15.036 66.754 14.6944 66.317 14.4482C65.8861 14.1958 65.3844 14.0696 64.812 14.0696C64.2149 14.0696 63.6856 14.2081 63.2239 14.4851C62.7684 14.7559 62.4114 15.1222 62.1529 15.5838C61.8944 16.0393 61.762 16.5471 61.7559 17.1072V19.4247C61.7559 20.1264 61.8851 20.7327 62.1437 21.2436C62.4083 21.7545 62.7807 22.1484 63.2608 22.4254C63.741 22.7024 64.3103 22.8409 64.9689 22.8409C65.406 22.8409 65.8061 22.7794 66.1692 22.6562C66.5324 22.5331 66.8432 22.3485 67.1018 22.1023C67.3603 21.8561 67.5572 21.5545 67.6927 21.1974L71.3304 21.4375C71.1458 22.3116 70.7672 23.0748 70.1948 23.7273C69.6285 24.3736 68.896 24.8783 67.9974 25.2415C67.1048 25.5985 66.0738 25.777 64.9043 25.777ZM77.1335 6.59091V25.5H73.2003V6.59091H77.1335ZM79.5043 25.5V11.3182H83.4375V25.5H79.5043ZM81.4801 9.49006C80.8954 9.49006 80.3937 9.29616 79.9752 8.90838C79.5628 8.51444 79.3566 8.04356 79.3566 7.49574C79.3566 6.95407 79.5628 6.48935 79.9752 6.10156C80.3937 5.70762 80.8954 5.51065 81.4801 5.51065C82.0649 5.51065 82.5635 5.70762 82.9759 6.10156C83.3944 6.48935 83.6037 6.95407 83.6037 7.49574C83.6037 8.04356 83.3944 8.51444 82.9759 8.90838C82.5635 9.29616 82.0649 9.49006 81.4801 9.49006ZM89.7415 17.3011V25.5H85.8083V11.3182H89.5569V13.8203H89.723C90.037 12.9955 90.5632 12.343 91.3019 11.8629C92.0405 11.3767 92.9361 11.1335 93.9887 11.1335C94.9735 11.1335 95.8322 11.349 96.5647 11.7798C97.2971 12.2107 97.8665 12.8262 98.2728 13.6264C98.679 14.4205 98.8821 15.3684 98.8821 16.4702V25.5H94.9489V17.1719C94.9551 16.304 94.7335 15.6269 94.2841 15.1406C93.8348 14.6482 93.2162 14.402 92.4283 14.402C91.8989 14.402 91.4311 14.5159 91.0249 14.7436C90.6248 14.9714 90.3109 15.3037 90.0831 15.7408C89.8615 16.1716 89.7477 16.6918 89.7415 17.3011ZM107.665 25.777C106.206 25.777 104.951 25.4815 103.898 24.8906C102.852 24.2936 102.045 23.4503 101.479 22.3608C100.913 21.2652 100.63 19.9695 100.63 18.4737C100.63 17.0149 100.913 15.7346 101.479 14.6328C102.045 13.531 102.842 12.6723 103.87 12.0568C104.905 11.4413 106.117 11.1335 107.508 11.1335C108.444 11.1335 109.315 11.2843 110.121 11.5859C110.934 11.8814 111.641 12.3277 112.245 12.9247C112.854 13.5218 113.328 14.2727 113.667 15.1776C114.005 16.0762 114.174 17.1288 114.174 18.3352V19.4155H102.199V16.978H110.472C110.472 16.4117 110.349 15.91 110.103 15.473C109.856 15.036 109.515 14.6944 109.078 14.4482C108.647 14.1958 108.145 14.0696 107.573 14.0696C106.976 14.0696 106.446 14.2081 105.985 14.4851C105.529 14.7559 105.172 15.1222 104.914 15.5838C104.655 16.0393 104.523 16.5471 104.517 17.1072V19.4247C104.517 20.1264 104.646 20.7327 104.905 21.2436C105.169 21.7545 105.542 22.1484 106.022 22.4254C106.502 22.7024 107.071 22.8409 107.73 22.8409C108.167 22.8409 108.567 22.7794 108.93 22.6562C109.293 22.5331 109.604 22.3485 109.863 22.1023C110.121 21.8561 110.318 21.5545 110.454 21.1974L114.091 21.4375C113.907 22.3116 113.528 23.0748 112.956 23.7273C112.389 24.3736 111.657 24.8783 110.758 25.2415C109.866 25.5985 108.835 25.777 107.665 25.777Z"
-                            class="fill-blue-600 dark:fill-white"
-                            fill="currentColor"
-                        />
-                        <path
-                            d="M1 29.5V16.5C1 9.87258 6.37258 4.5 13 4.5C19.6274 4.5 25 9.87258 25 16.5C25 23.1274 19.6274 28.5 13 28.5H12"
-                            class="stroke-blue-600 dark:stroke-white"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        />
-                        <path
-                            d="M5 29.5V16.66C5 12.1534 8.58172 8.5 13 8.5C17.4183 8.5 21 12.1534 21 16.66C21 21.1666 17.4183 24.82 13 24.82H12"
-                            class="stroke-blue-600 dark:stroke-white"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        />
-                        <circle
-                            cx="13"
-                            cy="16.5214"
-                            r="5"
-                            class="fill-blue-600 dark:fill-white"
-                            fill="currentColor"
-                        />
-                    </svg>
+                    <img
+                        src="../../../../public/img/logo.png"
+                        width="50"
+                        height="50"
+                        alt="Logo"
+                    />
                 </a>
 
                 <!-- End Logo -->
@@ -825,13 +1087,11 @@ onMounted(() => {
                                 Beranda
                             </a>
                         </li>
-
-                        <li class="hs-accordion" id="users-accordion">
-                            <button
-                                type="button"
-                                class="hs-accordion-toggle w-full text-start flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                aria-expanded="true"
-                                aria-controls="users-accordion-child"
+                        <!--
+                        <li>
+                            <a
+                                class="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
+                                href="#"
                             >
                                 <svg
                                     class="shrink-0 size-4"
@@ -846,213 +1106,15 @@ onMounted(() => {
                                     stroke-linejoin="round"
                                 >
                                     <path
-                                        d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+                                        d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"
                                     />
-                                    <circle cx="9" cy="7" r="4" />
-                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                    <path
+                                        d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"
+                                    />
                                 </svg>
-                                Users
-
-                                <svg
-                                    class="hidden hs-accordion-active:block ms-auto size-4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <path d="m18 15-6-6-6 6" />
-                                </svg>
-
-                                <svg
-                                    class="block hs-accordion-active:hidden ms-auto size-4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <path d="m6 9 6 6 6-6" />
-                                </svg>
-                            </button>
-
-                            <div
-                                id="users-accordion-child"
-                                class="hs-accordion-content w-full overflow-hidden transition-[height] duration-300 hidden"
-                                role="region"
-                                aria-labelledby="users-accordion"
-                            >
-                                <ul
-                                    class="pt-1 space-y-1 hs-accordion-group ps-8"
-                                    data-hs-accordion-always-open
-                                >
-                                    <li
-                                        class="hs-accordion"
-                                        id="users-accordion-sub-1"
-                                    >
-                                        <button
-                                            type="button"
-                                            class="hs-accordion-toggle w-full text-start flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                            aria-expanded="true"
-                                            aria-controls="users-accordion-sub-1-child"
-                                        >
-                                            Sub Menu 1
-
-                                            <svg
-                                                class="hidden hs-accordion-active:block ms-auto size-4"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="24"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                            >
-                                                <path d="m18 15-6-6-6 6" />
-                                            </svg>
-
-                                            <svg
-                                                class="block hs-accordion-active:hidden ms-auto size-4"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="24"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                            >
-                                                <path d="m6 9 6 6 6-6" />
-                                            </svg>
-                                        </button>
-
-                                        <div
-                                            id="users-accordion-sub-1-child"
-                                            class="hs-accordion-content w-full overflow-hidden transition-[height] duration-300 hidden"
-                                            role="region"
-                                            aria-labelledby="users-accordion-sub-1"
-                                        >
-                                            <ul class="pt-1 space-y-1">
-                                                <li>
-                                                    <a
-                                                        class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                                        href="#"
-                                                    >
-                                                        Link 1
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a
-                                                        class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                                        href="#"
-                                                    >
-                                                        Link 2
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a
-                                                        class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                                        href="#"
-                                                    >
-                                                        Link 3
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="hs-accordion"
-                                        id="users-accordion-sub-2"
-                                    >
-                                        <button
-                                            type="button"
-                                            class="hs-accordion-toggle w-full text-start flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                            aria-expanded="true"
-                                            aria-controls="users-accordion-sub-2-child"
-                                        >
-                                            Sub Menu 2
-
-                                            <svg
-                                                class="hidden hs-accordion-active:block ms-auto size-4"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="24"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                            >
-                                                <path d="m18 15-6-6-6 6" />
-                                            </svg>
-
-                                            <svg
-                                                class="block hs-accordion-active:hidden ms-auto size-4"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="24"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                            >
-                                                <path d="m6 9 6 6 6-6" />
-                                            </svg>
-                                        </button>
-
-                                        <div
-                                            id="users-accordion-sub-2-child"
-                                            class="hs-accordion-content w-full overflow-hidden transition-[height] duration-300 hidden"
-                                            role="region"
-                                            aria-labelledby="users-accordion-sub-2"
-                                        >
-                                            <ul class="pt-1 space-y-1">
-                                                <li>
-                                                    <a
-                                                        class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                                        href="#"
-                                                    >
-                                                        Link 1
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a
-                                                        class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                                        href="#"
-                                                    >
-                                                        Link 2
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a
-                                                        class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                                        href="#"
-                                                    >
-                                                        Link 3
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-
+                                Projek Donasi
+                            </a>
+                        </li> -->
                         <li class="hs-accordion" id="account-accordion">
                             <button
                                 type="button"
@@ -1084,7 +1146,7 @@ onMounted(() => {
                                     <path d="m14.3 16.6 1-.4" />
                                     <path d="m20.7 13.8 1-.4" />
                                 </svg>
-                                Account
+                                Manajemen Akun
 
                                 <svg
                                     class="hidden hs-accordion-active:block ms-auto size-4"
@@ -1129,7 +1191,7 @@ onMounted(() => {
                                             class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
                                             href="#"
                                         >
-                                            Link 1
+                                            Donatur
                                         </a>
                                     </li>
                                     <li>
@@ -1137,184 +1199,11 @@ onMounted(() => {
                                             class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
                                             href="#"
                                         >
-                                            Link 2
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                            href="#"
-                                        >
-                                            Link 3
+                                            Campaigner
                                         </a>
                                     </li>
                                 </ul>
                             </div>
-                        </li>
-
-                        <li class="hs-accordion" id="projects-accordion">
-                            <button
-                                type="button"
-                                class="hs-accordion-toggle w-full text-start flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                aria-expanded="true"
-                                aria-controls="projects-accordion-child"
-                            >
-                                <svg
-                                    class="shrink-0 size-4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <rect
-                                        width="20"
-                                        height="14"
-                                        x="2"
-                                        y="7"
-                                        rx="2"
-                                        ry="2"
-                                    />
-                                    <path
-                                        d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"
-                                    />
-                                </svg>
-                                Projects
-
-                                <svg
-                                    class="hidden hs-accordion-active:block ms-auto size-4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <path d="m18 15-6-6-6 6" />
-                                </svg>
-
-                                <svg
-                                    class="block hs-accordion-active:hidden ms-auto size-4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <path d="m6 9 6 6 6-6" />
-                                </svg>
-                            </button>
-
-                            <div
-                                id="projects-accordion-child"
-                                class="hs-accordion-content w-full overflow-hidden transition-[height] duration-300 hidden"
-                                role="region"
-                                aria-labelledby="projects-accordion"
-                            >
-                                <ul class="pt-1 space-y-1 ps-8">
-                                    <li>
-                                        <a
-                                            class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                            href="#"
-                                        >
-                                            Link 1
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                            href="#"
-                                        >
-                                            Link 2
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                            href="#"
-                                        >
-                                            Link 3
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-
-                        <li>
-                            <a
-                                class="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                href="#"
-                            >
-                                <svg
-                                    class="shrink-0 size-4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <rect
-                                        width="18"
-                                        height="18"
-                                        x="3"
-                                        y="4"
-                                        rx="2"
-                                        ry="2"
-                                    />
-                                    <line x1="16" x2="16" y1="2" y2="6" />
-                                    <line x1="8" x2="8" y1="2" y2="6" />
-                                    <line x1="3" x2="21" y1="10" y2="10" />
-                                    <path d="M8 14h.01" />
-                                    <path d="M12 14h.01" />
-                                    <path d="M16 14h.01" />
-                                    <path d="M8 18h.01" />
-                                    <path d="M12 18h.01" />
-                                    <path d="M16 18h.01" />
-                                </svg>
-                                Calendar
-                            </a>
-                        </li>
-                        <li>
-                            <a
-                                class="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:text-neutral-200"
-                                href="#"
-                            >
-                                <svg
-                                    class="shrink-0 size-4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <path
-                                        d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"
-                                    />
-                                    <path
-                                        d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"
-                                    />
-                                </svg>
-                                Documentation
-                            </a>
                         </li>
                     </ul>
                 </nav>
@@ -1328,77 +1217,73 @@ onMounted(() => {
     <div class="w-full lg:ps-64">
         <div class="p-4 space-y-4 sm:p-6 sm:space-y-6">
             <!-- Grid -->
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-2 sm:gap-6">
+                <!-- Card -->
+                <div
+                    class="flex flex-col bg-white border border-gray-200 shadow-2xs rounded-xl dark:bg-neutral-800 dark:border-neutral-700"
+                >
+                    <div class="p-4 md:p-5">
+                        <div class="flex items-center gap-x-2">
+                            <p
+                                class="text-xs text-gray-500 uppercase dark:text-neutral-500"
+                            >
+                                Projek Selesai
+                            </p>
+                        </div>
+
+                        <div class="flex items-center mt-1 gap-x-2">
+                            <h3
+                                class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
+                            >
+                                {{ finishedProjects }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Card -->
+
+                <!-- Card -->
+                <div
+                    class="flex flex-col bg-white border border-gray-200 shadow-2xs rounded-xl dark:bg-neutral-800 dark:border-neutral-700"
+                >
+                    <div class="p-4 md:p-5">
+                        <div class="flex items-center gap-x-2">
+                            <p
+                                class="text-xs text-gray-500 uppercase dark:text-neutral-500"
+                            >
+                                Total Projek
+                            </p>
+                        </div>
+
+                        <div class="flex items-center mt-1 gap-x-2">
+                            <h3
+                                class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
+                            >
+                                {{ totalProjects }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Card -->
+            </div>
+            <!-- End Grid -->
+            <!-- Grid -->
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6">
                 <!-- Card -->
                 <div
-                    class="flex flex-col bg-white border border-gray-200 shadow-2xs rounded-xl dark:bg-neutral-800 dark:border-neutral-700"
+                    class="flex flex-col bg-white border border-gray-200 shadow-2xs rounded-xl dark:bg-neutral-800"
                 >
                     <div class="p-4 md:p-5">
-                        <div class="flex items-center gap-x-2">
-                            <p
-                                class="text-xs text-gray-500 uppercase dark:text-neutral-500"
-                            >
-                                Total users
-                            </p>
-                            <div class="hs-tooltip">
-                                <div class="hs-tooltip-toggle">
-                                    <svg
-                                        class="text-gray-500 shrink-0 size-4 dark:text-neutral-500"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    >
-                                        <circle cx="12" cy="12" r="10" />
-                                        <path
-                                            d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
-                                        />
-                                        <path d="M12 17h.01" />
-                                    </svg>
-                                    <span
-                                        class="absolute z-10 invisible inline-block px-2 py-1 text-xs font-medium text-white transition-opacity bg-gray-900 rounded-md opacity-0 hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible shadow-2xs dark:bg-neutral-700"
-                                        role="tooltip"
-                                    >
-                                        The number of daily users
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center mt-1 gap-x-2">
-                            <h3
-                                class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
-                            >
-                                72,540
-                            </h3>
-                            <span
-                                class="flex items-center text-green-600 gap-x-1"
-                            >
-                                <svg
-                                    class="self-center inline-block size-4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <polyline
-                                        points="22 7 13.5 15.5 8.5 10.5 2 17"
-                                    />
-                                    <polyline points="16 7 22 7 22 13" />
-                                </svg>
-                                <span class="inline-block text-sm"> 1.7% </span>
-                            </span>
-                        </div>
+                        <p
+                            class="text-xs text-gray-500 uppercase dark:text-neutral-500"
+                        >
+                            Projek Aktif
+                        </p>
+                        <h3
+                            class="mt-1 text-xl font-medium dark:text-neutral-200"
+                        >
+                            {{ activeProjects }}
+                        </h3>
                     </div>
                 </div>
                 <!-- End Card -->
@@ -1412,7 +1297,7 @@ onMounted(() => {
                             <p
                                 class="text-xs text-gray-500 uppercase dark:text-neutral-500"
                             >
-                                Sessions
+                                Terkumpul
                             </p>
                         </div>
 
@@ -1420,7 +1305,7 @@ onMounted(() => {
                             <h3
                                 class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
                             >
-                                29.4%
+                                Rp {{ totalCollected.toLocaleString("id-ID") }}
                             </h3>
                         </div>
                     </div>
@@ -1436,7 +1321,7 @@ onMounted(() => {
                             <p
                                 class="text-xs text-gray-500 uppercase dark:text-neutral-500"
                             >
-                                Avg. Click Rate
+                                Projek Ditolak
                             </p>
                         </div>
 
@@ -1444,30 +1329,8 @@ onMounted(() => {
                             <h3
                                 class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
                             >
-                                56.8%
+                                {{ rejectedProjects }}
                             </h3>
-                            <span
-                                class="flex items-center text-red-600 gap-x-1"
-                            >
-                                <svg
-                                    class="self-center inline-block size-4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <polyline
-                                        points="22 17 13.5 8.5 8.5 13.5 2 7"
-                                    />
-                                    <polyline points="16 17 22 17 22 11" />
-                                </svg>
-                                <span class="inline-block text-sm"> 1.7% </span>
-                            </span>
                         </div>
                     </div>
                 </div>
@@ -1482,7 +1345,7 @@ onMounted(() => {
                             <p
                                 class="text-xs text-gray-500 uppercase dark:text-neutral-500"
                             >
-                                Pageviews
+                                Projek Pending
                             </p>
                         </div>
 
@@ -1490,7 +1353,7 @@ onMounted(() => {
                             <h3
                                 class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
                             >
-                                92,913
+                                {{ pendingProjects }}
                             </h3>
                         </div>
                     </div>
@@ -1512,7 +1375,7 @@ onMounted(() => {
                             <h2
                                 class="text-sm text-gray-500 dark:text-neutral-500"
                             >
-                                Income
+                                Permintaan Projek Donasi
                             </h2>
                             <p
                                 class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
@@ -1562,7 +1425,7 @@ onMounted(() => {
                             <h2
                                 class="text-sm text-gray-500 dark:text-neutral-500"
                             >
-                                Visitors
+                                Keaktifan Donatur
                             </h2>
                             <p
                                 class="text-xl font-medium text-gray-800 sm:text-2xl dark:text-neutral-200"
@@ -1616,27 +1479,20 @@ onMounted(() => {
                                     <h2
                                         class="text-xl font-semibold text-gray-800 dark:text-neutral-200"
                                     >
-                                        Users
+                                        Projek Donasi
                                     </h2>
                                     <p
                                         class="text-sm text-gray-600 dark:text-neutral-400"
                                     >
-                                        Add users, edit and more.
+                                        Rekapan Akumulatif
                                     </p>
                                 </div>
 
                                 <div>
                                     <div class="inline-flex gap-x-2">
                                         <a
-                                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-200 rounded-lg gap-x-2 shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
-                                            href="#"
-                                        >
-                                            View all
-                                        </a>
-
-                                        <a
                                             class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg gap-x-2 hover:bg-blue-700 focus:outline-hidden focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                                            href="#"
+                                            @click="showModal = true"
                                         >
                                             <svg
                                                 class="shrink-0 size-4"
@@ -1653,7 +1509,7 @@ onMounted(() => {
                                                 <path d="M5 12h14" />
                                                 <path d="M12 5v14" />
                                             </svg>
-                                            Add user
+                                            Buat Campaign Donasi
                                         </a>
                                     </div>
                                 </div>
@@ -1666,1566 +1522,284 @@ onMounted(() => {
                             >
                                 <thead class="bg-gray-50 dark:bg-neutral-800">
                                     <tr>
+                                        <!-- Nama Project -->
                                         <th
                                             scope="col"
-                                            class="py-3 ps-6 text-start"
+                                            class="py-4 text-left ps-6 pe-4"
                                         >
-                                            <label
-                                                for="hs-at-with-checkboxes-main"
-                                                class="flex"
+                                            <span
+                                                class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                    id="hs-at-with-checkboxes-main"
-                                                />
-                                                <span class="sr-only"
-                                                    >Checkbox</span
-                                                >
-                                            </label>
+                                                Gambar
+                                            </span>
                                         </th>
 
+                                        <!-- Target & Terkumpul -->
                                         <th
                                             scope="col"
-                                            class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6 text-start"
+                                            class="px-6 py-4 text-left"
                                         >
-                                            <div
-                                                class="flex items-center gap-x-2"
+                                            <span
+                                                class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
                                             >
-                                                <span
-                                                    class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
-                                                >
-                                                    Name
-                                                </span>
-                                            </div>
+                                                Nama Project
+                                            </span>
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            class="px-6 py-4 text-left"
+                                        >
+                                            <span
+                                                class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
+                                            >
+                                                Target & Terkumpul
+                                            </span>
                                         </th>
 
+                                        <!-- Status -->
                                         <th
                                             scope="col"
-                                            class="px-6 py-3 text-start"
+                                            class="px-6 py-4 text-left"
                                         >
-                                            <div
-                                                class="flex items-center gap-x-2"
+                                            <span
+                                                class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
                                             >
-                                                <span
-                                                    class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
-                                                >
-                                                    Position
-                                                </span>
-                                            </div>
+                                                Status
+                                            </span>
                                         </th>
 
+                                        <!-- Progress -->
                                         <th
                                             scope="col"
-                                            class="px-6 py-3 text-start"
+                                            class="px-6 py-4 text-left"
                                         >
-                                            <div
-                                                class="flex items-center gap-x-2"
+                                            <span
+                                                class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
                                             >
-                                                <span
-                                                    class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
-                                                >
-                                                    Status
-                                                </span>
-                                            </div>
+                                                Progress
+                                            </span>
                                         </th>
 
+                                        <!-- Dibuat -->
                                         <th
                                             scope="col"
-                                            class="px-6 py-3 text-start"
+                                            class="px-6 py-4 text-left"
                                         >
-                                            <div
-                                                class="flex items-center gap-x-2"
+                                            <span
+                                                class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
                                             >
-                                                <span
-                                                    class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
-                                                >
-                                                    Portfolio
-                                                </span>
-                                            </div>
+                                                Dibuat
+                                            </span>
                                         </th>
 
+                                        <!-- Aksi -->
                                         <th
                                             scope="col"
-                                            class="px-6 py-3 text-start"
+                                            class="px-6 py-4 text-right"
                                         >
-                                            <div
-                                                class="flex items-center gap-x-2"
-                                            >
-                                                <span
-                                                    class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
-                                                >
-                                                    Created
-                                                </span>
-                                            </div>
+                                            <span class="sr-only">Aksi</span>
                                         </th>
-
-                                        <th
-                                            scope="col"
-                                            class="px-6 py-3 text-end"
-                                        ></th>
                                     </tr>
                                 </thead>
 
                                 <tbody
                                     class="divide-y divide-gray-200 dark:divide-neutral-700"
                                 >
-                                    <tr>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="py-3 ps-6">
-                                                <label
-                                                    for="hs-at-with-checkboxes-1"
-                                                    class="flex"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                        id="hs-at-with-checkboxes-1"
-                                                    />
-                                                    <span class="sr-only"
-                                                        >Checkbox</span
-                                                    >
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
+                                    <tr
+                                        v-for="project in projects"
+                                        :key="project.id"
+                                    >
+                                        <!-- Nama Project -->
+                                        <td
+                                            class="py-4 ps-6 pe-4 whitespace-nowrap"
+                                        >
                                             <div
-                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
+                                                class="flex items-center gap-x-3"
                                             >
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <img
-                                                        class="inline-block size-9.5 rounded-full"
-                                                        src="https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
-                                                        alt="Avatar"
-                                                    />
-                                                    <div class="grow">
-                                                        <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                            >Christina
-                                                            Bersh</span
-                                                        >
-                                                        <span
-                                                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                            >christina@site.com</span
-                                                        >
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="h-px w-72 whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                    >Director</span
-                                                >
-                                                <span
-                                                    class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                    >Human resources</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500"
-                                                >
-                                                    <svg
-                                                        class="size-2.5"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path
-                                                            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
-                                                        />
-                                                    </svg>
-                                                    Active
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
+                                                <img
+                                                    class="inline-block object-cover w-12 h-12 rounded-lg"
+                                                    :src="`/${cleanImageUrl(
+                                                        project.images[0]?.url
+                                                    )}`"
+                                                    :alt="gambar"
+                                                />
+                                                <div class="flex flex-col">
                                                     <span
-                                                        class="text-xs text-gray-500 dark:text-neutral-500"
-                                                        >1/5</span
+                                                        class="text-sm font-semibold text-gray-800 dark:text-neutral-200"
                                                     >
-                                                    <div
-                                                        class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
-                                                    >
-                                                        <div
-                                                            class="flex flex-col justify-center overflow-hidden bg-gray-800 dark:bg-neutral-200"
-                                                            role="progressbar"
-                                                            style="width: 25%"
-                                                            aria-valuenow="25"
-                                                            aria-valuemin="0"
-                                                            aria-valuemax="100"
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                                    >28 Dec, 12:12</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-1.5">
-                                                <a
-                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
-                                                    href="#"
-                                                >
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="py-3 ps-6">
-                                                <label
-                                                    for="hs-at-with-checkboxes-2"
-                                                    class="flex"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                        id="hs-at-with-checkboxes-2"
-                                                    />
-                                                    <span class="sr-only"
-                                                        >Checkbox</span
-                                                    >
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div
-                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
-                                            >
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <img
-                                                        class="inline-block size-9.5 rounded-full"
-                                                        src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
-                                                        alt="Avatar"
-                                                    />
-                                                    <div class="grow">
-                                                        <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                            >David
-                                                            Harrison</span
-                                                        >
-                                                        <span
-                                                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                            >david@site.com</span
-                                                        >
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="h-px w-72 whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                    >Seller</span
-                                                >
-                                                <span
-                                                    class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                    >Branding products</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full dark:bg-yellow-500/10 dark:text-yellow-500"
-                                                >
-                                                    <svg
-                                                        class="size-2.5"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path
-                                                            d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"
-                                                        />
-                                                    </svg>
-                                                    Warning
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <span
-                                                        class="text-xs text-gray-500 dark:text-neutral-500"
-                                                        >3/5</span
-                                                    >
-                                                    <div
-                                                        class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
-                                                    >
-                                                        <div
-                                                            class="flex flex-col justify-center overflow-hidden bg-gray-800 dark:bg-neutral-200"
-                                                            role="progressbar"
-                                                            style="width: 78%"
-                                                            aria-valuenow="78"
-                                                            aria-valuemin="0"
-                                                            aria-valuemax="100"
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                                    >20 Dec, 09:27</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-1.5">
-                                                <a
-                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
-                                                    href="#"
-                                                >
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="py-3 ps-6">
-                                                <label
-                                                    for="hs-at-with-checkboxes-3"
-                                                    class="flex"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                        id="hs-at-with-checkboxes-3"
-                                                    />
-                                                    <span class="sr-only"
-                                                        >Checkbox</span
-                                                    >
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div
-                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
-                                            >
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <span
-                                                        class="inline-flex items-center justify-center size-9.5 rounded-full bg-white border border-gray-300 dark:bg-neutral-800 dark:border-neutral-700"
-                                                    >
-                                                        <span
-                                                            class="text-sm font-medium text-gray-800 dark:text-neutral-200"
-                                                            >A</span
-                                                        >
+                                                        {{ project.title }}
                                                     </span>
-                                                    <div class="grow">
-                                                        <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                            >Anne Richard</span
-                                                        >
-                                                        <span
-                                                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                            >anne@site.com</span
-                                                        >
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="h-px w-72 whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                    >Designer</span
-                                                >
-                                                <span
-                                                    class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                    >IT department</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500"
-                                                >
-                                                    <svg
-                                                        class="size-2.5"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path
-                                                            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
-                                                        />
-                                                    </svg>
-                                                    Active
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
                                                     <span
                                                         class="text-xs text-gray-500 dark:text-neutral-500"
-                                                        >5/5</span
                                                     >
-                                                    <div
-                                                        class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
-                                                    >
-                                                        <div
-                                                            class="flex flex-col justify-center overflow-hidden bg-gray-800 dark:bg-neutral-200"
-                                                            role="progressbar"
-                                                            style="width: 100%"
-                                                            aria-valuenow="100"
-                                                            aria-valuemin="0"
-                                                            aria-valuemax="100"
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                                    >18 Dec, 15:20</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-1.5">
-                                                <a
-                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
-                                                    href="#"
-                                                >
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="py-3 ps-6">
-                                                <label
-                                                    for="hs-at-with-checkboxes-4"
-                                                    class="flex"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                        id="hs-at-with-checkboxes-4"
-                                                    />
-                                                    <span class="sr-only"
-                                                        >Checkbox</span
-                                                    >
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div
-                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
-                                            >
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <img
-                                                        class="inline-block size-9.5 rounded-full"
-                                                        src="https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&&auto=format&fit=facearea&facepad=3&w=320&h=320&q=80"
-                                                        alt="Avatar"
-                                                    />
-                                                    <div class="grow">
-                                                        <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                            >Samia Kartoon</span
-                                                        >
-                                                        <span
-                                                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                            >samia@site.com</span
-                                                        >
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="h-px w-72 whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                    >Executive director</span
-                                                >
-                                                <span
-                                                    class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                    >Marketing</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500"
-                                                >
-                                                    <svg
-                                                        class="size-2.5"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path
-                                                            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
-                                                        />
-                                                    </svg>
-                                                    Active
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <span
-                                                        class="text-xs text-gray-500 dark:text-neutral-500"
-                                                        >0/5</span
-                                                    >
-                                                    <div
-                                                        class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
-                                                    >
-                                                        <div
-                                                            class="flex flex-col justify-center overflow-hidden bg-gray-800 dark:bg-neutral-200"
-                                                            role="progressbar"
-                                                            style="width: 1%"
-                                                            aria-valuenow="1"
-                                                            aria-valuemin="0"
-                                                            aria-valuemax="100"
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                                    >18 Dec, 15:20</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-1.5">
-                                                <a
-                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
-                                                    href="#"
-                                                >
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="py-3 ps-6">
-                                                <label
-                                                    for="hs-at-with-checkboxes-5"
-                                                    class="flex"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                        id="hs-at-with-checkboxes-5"
-                                                    />
-                                                    <span class="sr-only"
-                                                        >Checkbox</span
-                                                    >
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div
-                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
-                                            >
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <span
-                                                        class="inline-flex items-center justify-center size-9.5 rounded-full bg-white border border-gray-300 dark:bg-neutral-800 dark:border-neutral-700"
-                                                    >
-                                                        <span
-                                                            class="text-sm font-medium text-gray-800 dark:text-neutral-200"
-                                                            >D</span
-                                                        >
+                                                        {{
+                                                            project.short_description?.slice(
+                                                                0,
+                                                                30
+                                                            )
+                                                        }}
                                                     </span>
-                                                    <div class="grow">
-                                                        <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                            >David
-                                                            Harrison</span
-                                                        >
-                                                        <span
-                                                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                            >david@site.com</span
-                                                        >
-                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="h-px w-72 whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                    >Developer</span
-                                                >
-                                                <span
-                                                    class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                    >Mobile app</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-red-100 text-red-800 rounded-full dark:bg-red-500/10 dark:text-red-500"
-                                                >
-                                                    <svg
-                                                        class="size-2.5"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path
-                                                            d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"
-                                                        />
-                                                    </svg>
-                                                    Danger
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <span
-                                                        class="text-xs text-gray-500 dark:text-neutral-500"
-                                                        >3/5</span
-                                                    >
-                                                    <div
-                                                        class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
-                                                    >
-                                                        <div
-                                                            class="flex flex-col justify-center overflow-hidden bg-gray-800 dark:bg-neutral-200"
-                                                            role="progressbar"
-                                                            style="width: 78%"
-                                                            aria-valuenow="78"
-                                                            aria-valuemin="0"
-                                                            aria-valuemax="100"
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                                    >15 Dec, 14:41</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-1.5">
-                                                <a
-                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
-                                                    href="#"
-                                                >
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="py-3 ps-6">
-                                                <label
-                                                    for="hs-at-with-checkboxes-6"
-                                                    class="flex"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                        id="hs-at-with-checkboxes-6"
-                                                    />
-                                                    <span class="sr-only"
-                                                        >Checkbox</span
-                                                    >
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
+                                        <td
+                                            class="py-4 ps-6 pe-4 whitespace-nowrap"
+                                        >
                                             <div
-                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
+                                                class="flex items-center gap-x-3"
                                             >
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <img
-                                                        class="inline-block size-9.5 rounded-full"
-                                                        src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
-                                                        alt="Avatar"
-                                                    />
-                                                    <div class="grow">
-                                                        <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                            >Brian
-                                                            Halligan</span
-                                                        >
-                                                        <span
-                                                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                            >brian@site.com</span
-                                                        >
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="h-px w-72 whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                    >Accountant</span
-                                                >
-                                                <span
-                                                    class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                    >Finance</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500"
-                                                >
-                                                    <svg
-                                                        class="size-2.5"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path
-                                                            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
-                                                        />
-                                                    </svg>
-                                                    Active
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
+                                                <p>{{ project.name }}</p>
+                                                <div class="flex flex-col">
                                                     <span
-                                                        class="text-xs text-gray-500 dark:text-neutral-500"
-                                                        >2/5</span
+                                                        class="text-sm font-semibold text-gray-800 dark:text-neutral-200"
                                                     >
-                                                    <div
-                                                        class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
-                                                    >
-                                                        <div
-                                                            class="flex flex-col justify-center overflow-hidden bg-gray-800 dark:bg-neutral-200"
-                                                            role="progressbar"
-                                                            style="width: 40%"
-                                                            aria-valuenow="40"
-                                                            aria-valuemin="0"
-                                                            aria-valuemax="100"
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                                    >11 Dec, 18:51</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-1.5">
-                                                <a
-                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
-                                                    href="#"
-                                                >
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="py-3 ps-6">
-                                                <label
-                                                    for="hs-at-with-checkboxes-7"
-                                                    class="flex"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                        id="hs-at-with-checkboxes-7"
-                                                    />
-                                                    <span class="sr-only"
-                                                        >Checkbox</span
-                                                    >
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div
-                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
-                                            >
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <img
-                                                        class="inline-block size-9.5 rounded-full"
-                                                        src="https://images.unsplash.com/photo-1659482634023-2c4fda99ac0c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2.5&w=320&h=320&q=80"
-                                                        alt="Avatar"
-                                                    />
-                                                    <div class="grow">
-                                                        <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                            >Andy Clerk</span
-                                                        >
-                                                        <span
-                                                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                            >andy@site.com</span
-                                                        >
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="h-px w-72 whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                    >Director</span
-                                                >
-                                                <span
-                                                    class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                    >Human resources</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500"
-                                                >
-                                                    <svg
-                                                        class="size-2.5"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path
-                                                            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
-                                                        />
-                                                    </svg>
-                                                    Active
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <span
-                                                        class="text-xs text-gray-500 dark:text-neutral-500"
-                                                        >1/5</span
-                                                    >
-                                                    <div
-                                                        class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
-                                                    >
-                                                        <div
-                                                            class="flex flex-col justify-center overflow-hidden bg-gray-800 dark:bg-neutral-200"
-                                                            role="progressbar"
-                                                            style="width: 25%"
-                                                            aria-valuenow="25"
-                                                            aria-valuemin="0"
-                                                            aria-valuemax="100"
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                                    >28 Dec, 12:12</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-1.5">
-                                                <a
-                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
-                                                    href="#"
-                                                >
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="py-3 ps-6">
-                                                <label
-                                                    for="hs-at-with-checkboxes-8"
-                                                    class="flex"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                        id="hs-at-with-checkboxes-8"
-                                                    />
-                                                    <span class="sr-only"
-                                                        >Checkbox</span
-                                                    >
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div
-                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
-                                            >
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <img
-                                                        class="inline-block size-9.5 rounded-full"
-                                                        src="https://images.unsplash.com/photo-1601935111741-ae98b2b230b0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
-                                                        alt="Avatar"
-                                                    />
-                                                    <div class="grow">
-                                                        <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                            >Bart Simpson</span
-                                                        >
-                                                        <span
-                                                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                            >Bart@site.com</span
-                                                        >
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="h-px w-72 whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                    >Seller</span
-                                                >
-                                                <span
-                                                    class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                    >Branding products</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full dark:bg-yellow-500/10 dark:text-yellow-500"
-                                                >
-                                                    <svg
-                                                        class="size-2.5"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path
-                                                            d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"
-                                                        />
-                                                    </svg>
-                                                    Warning
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <span
-                                                        class="text-xs text-gray-500 dark:text-neutral-500"
-                                                        >3/5</span
-                                                    >
-                                                    <div
-                                                        class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
-                                                    >
-                                                        <div
-                                                            class="flex flex-col justify-center overflow-hidden bg-gray-800 dark:bg-neutral-200"
-                                                            role="progressbar"
-                                                            style="width: 78%"
-                                                            aria-valuenow="78"
-                                                            aria-valuemin="0"
-                                                            aria-valuemax="100"
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                                    >20 Dec, 09:27</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-1.5">
-                                                <a
-                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
-                                                    href="#"
-                                                >
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="py-3 ps-6">
-                                                <label
-                                                    for="hs-at-with-checkboxes-9"
-                                                    class="flex"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                        id="hs-at-with-checkboxes-9"
-                                                    />
-                                                    <span class="sr-only"
-                                                        >Checkbox</span
-                                                    >
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div
-                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
-                                            >
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <span
-                                                        class="inline-flex items-center justify-center size-9.5 rounded-full bg-white border border-gray-300 dark:bg-neutral-800 dark:border-neutral-700"
-                                                    >
-                                                        <span
-                                                            class="text-sm font-medium text-gray-800 dark:text-neutral-200"
-                                                            >C</span
-                                                        >
+                                                        {{ project.title }}
                                                     </span>
-                                                    <div class="grow">
-                                                        <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                            >Camila
-                                                            Welters</span
-                                                        >
-                                                        <span
-                                                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                            >cwelt@site.com</span
-                                                        >
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="h-px w-72 whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                    >Designer</span
-                                                >
-                                                <span
-                                                    class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                    >IT department</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500"
-                                                >
-                                                    <svg
-                                                        class="size-2.5"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path
-                                                            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
-                                                        />
-                                                    </svg>
-                                                    Active
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
                                                     <span
                                                         class="text-xs text-gray-500 dark:text-neutral-500"
-                                                        >5/5</span
                                                     >
-                                                    <div
-                                                        class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
-                                                    >
-                                                        <div
-                                                            class="flex flex-col justify-center overflow-hidden bg-gray-800 dark:bg-neutral-200"
-                                                            role="progressbar"
-                                                            style="width: 100%"
-                                                            aria-valuenow="100"
-                                                            aria-valuemin="0"
-                                                            aria-valuemax="100"
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                                    >18 Dec, 15:20</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-1.5">
-                                                <a
-                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
-                                                    href="#"
-                                                >
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="py-3 ps-6">
-                                                <label
-                                                    for="hs-at-with-checkboxes-10"
-                                                    class="flex"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                        id="hs-at-with-checkboxes-10"
-                                                    />
-                                                    <span class="sr-only"
-                                                        >Checkbox</span
-                                                    >
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div
-                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
-                                            >
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <img
-                                                        class="inline-block size-9.5 rounded-full"
-                                                        src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
-                                                        alt="Avatar"
-                                                    />
-                                                    <div class="grow">
-                                                        <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                            >Oliver
-                                                            Schevich</span
-                                                        >
-                                                        <span
-                                                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                            >oliver@site.com</span
-                                                        >
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="h-px w-72 whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                    >Seller</span
-                                                >
-                                                <span
-                                                    class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                    >Branding products</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full dark:bg-yellow-500/10 dark:text-yellow-500"
-                                                >
-                                                    <svg
-                                                        class="size-2.5"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path
-                                                            d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"
-                                                        />
-                                                    </svg>
-                                                    Warning
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <span
-                                                        class="text-xs text-gray-500 dark:text-neutral-500"
-                                                        >3/5</span
-                                                    >
-                                                    <div
-                                                        class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
-                                                    >
-                                                        <div
-                                                            class="flex flex-col justify-center overflow-hidden bg-gray-800 dark:bg-neutral-200"
-                                                            role="progressbar"
-                                                            style="width: 78%"
-                                                            aria-valuenow="78"
-                                                            aria-valuemin="0"
-                                                            aria-valuemax="100"
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                                    >20 Dec, 09:27</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-1.5">
-                                                <a
-                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
-                                                    href="#"
-                                                >
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="py-3 ps-6">
-                                                <label
-                                                    for="hs-at-with-checkboxes-11"
-                                                    class="flex"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                        id="hs-at-with-checkboxes-11"
-                                                    />
-                                                    <span class="sr-only"
-                                                        >Checkbox</span
-                                                    >
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div
-                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
-                                            >
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <span
-                                                        class="inline-flex items-center justify-center size-9.5 rounded-full bg-white border border-gray-300 dark:bg-neutral-800 dark:border-neutral-700"
-                                                    >
-                                                        <span
-                                                            class="text-sm font-medium text-gray-800 dark:text-neutral-200"
-                                                            >I</span
-                                                        >
+                                                        {{
+                                                            project.short_description?.slice(
+                                                                0,
+                                                                30
+                                                            )
+                                                        }}
                                                     </span>
-                                                    <div class="grow">
-                                                        <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                            >Inna Ivy</span
-                                                        >
-                                                        <span
-                                                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                            >invy@site.com</span
-                                                        >
-                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="h-px w-72 whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                    >Designer</span
-                                                >
-                                                <span
-                                                    class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                    >IT department</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500"
-                                                >
-                                                    <svg
-                                                        class="size-2.5"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path
-                                                            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
-                                                        />
-                                                    </svg>
-                                                    Active
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <div
-                                                    class="flex items-center gap-x-3"
-                                                >
-                                                    <span
-                                                        class="text-xs text-gray-500 dark:text-neutral-500"
-                                                        >5/5</span
-                                                    >
-                                                    <div
-                                                        class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
-                                                    >
-                                                        <div
-                                                            class="flex flex-col justify-center overflow-hidden bg-gray-800 dark:bg-neutral-200"
-                                                            role="progressbar"
-                                                            style="width: 100%"
-                                                            aria-valuenow="100"
-                                                            aria-valuemin="0"
-                                                            aria-valuemax="100"
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                                    >18 Dec, 15:20</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-1.5">
-                                                <a
-                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
-                                                    href="#"
-                                                >
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
 
-                                    <tr>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="py-3 ps-6">
-                                                <label
-                                                    for="hs-at-with-checkboxes-12"
-                                                    class="flex"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        class="text-blue-600 border-gray-300 rounded-sm shrink-0 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                                        id="hs-at-with-checkboxes-12"
-                                                    />
-                                                    <span class="sr-only"
-                                                        >Checkbox</span
-                                                    >
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div
-                                                class="py-3 ps-6 lg:ps-3 xl:ps-0 pe-6"
+                                        <!-- Target & Terkumpul -->
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span
+                                                class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
                                             >
-                                                <div
-                                                    class="flex items-center gap-x-3"
+                                                Rp
+                                                {{
+                                                    new Intl.NumberFormat(
+                                                        "id-ID"
+                                                    ).format(
+                                                        project.target_amount
+                                                    )
+                                                }}
+                                            </span>
+                                            <span
+                                                class="block text-xs text-gray-500 dark:text-neutral-500"
+                                            >
+                                                Terkumpul: Rp
+                                                {{
+                                                    new Intl.NumberFormat(
+                                                        "id-ID"
+                                                    ).format(
+                                                        project.collection_amount
+                                                    )
+                                                }}
+                                            </span>
+                                        </td>
+
+                                        <!-- Status -->
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full gap-x-1"
+                                                :class="
+                                                    getStatusBadge(
+                                                        project.status
+                                                    )
+                                                "
+                                            >
+                                                <!-- icon sesuai status -->
+                                                <svg
+                                                    v-if="
+                                                        project.status ===
+                                                            'active' ||
+                                                        project.status ===
+                                                            'completed'
+                                                    "
+                                                    class="w-3 h-3"
+                                                    viewBox="0 0 16 16"
+                                                    fill="currentColor"
                                                 >
-                                                    <img
-                                                        class="inline-block size-9.5 rounded-full"
-                                                        src="https://images.unsplash.com/photo-1670272505340-d906d8d77d03?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
-                                                        alt="Avatar"
+                                                    <path
+                                                        d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99z"
                                                     />
-                                                    <div class="grow">
-                                                        <span
-                                                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                            >Jessica
-                                                            Williams</span
-                                                        >
-                                                        <span
-                                                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                            >myhairisred@site.com</span
-                                                        >
-                                                    </div>
-                                                </div>
-                                            </div>
+                                                </svg>
+                                                {{ project.status }}
+                                            </span>
                                         </td>
-                                        <td class="h-px w-72 whitespace-nowrap">
-                                            <div class="px-6 py-3">
+
+                                        <!-- Progress -->
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div
+                                                class="flex items-center gap-x-3"
+                                            >
                                                 <span
-                                                    class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                                                    >Executive director</span
+                                                    class="text-xs text-gray-500 dark:text-neutral-500"
                                                 >
-                                                <span
-                                                    class="block text-sm text-gray-500 dark:text-neutral-500"
-                                                    >Marketing</span
-                                                >
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500"
-                                                >
-                                                    <svg
-                                                        class="size-2.5"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 16 16"
-                                                    >
-                                                        <path
-                                                            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
-                                                        />
-                                                    </svg>
-                                                    Active
+                                                    {{
+                                                        getProgress(
+                                                            project.collection_amount,
+                                                            project.target_amount
+                                                        )
+                                                    }}%
                                                 </span>
-                                            </div>
-                                        </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
                                                 <div
-                                                    class="flex items-center gap-x-3"
+                                                    class="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
                                                 >
-                                                    <span
-                                                        class="text-xs text-gray-500 dark:text-neutral-500"
-                                                        >0/5</span
-                                                    >
                                                     <div
-                                                        class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700"
-                                                    >
-                                                        <div
-                                                            class="flex flex-col justify-center overflow-hidden bg-gray-800 dark:bg-neutral-200"
-                                                            role="progressbar"
-                                                            style="width: 1%"
-                                                            aria-valuenow="1"
-                                                            aria-valuemin="0"
-                                                            aria-valuemax="100"
-                                                        ></div>
-                                                    </div>
+                                                        class="h-full bg-blue-600 dark:bg-blue-400"
+                                                        :style="{
+                                                            width:
+                                                                getProgress(
+                                                                    project.collection_amount,
+                                                                    project.target_amount
+                                                                ) + '%',
+                                                        }"
+                                                    />
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-3">
-                                                <span
-                                                    class="text-sm text-gray-500 dark:text-neutral-500"
-                                                    >18 Dec, 15:20</span
-                                                >
-                                            </div>
+
+                                        <!-- Tanggal -->
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span
+                                                class="text-sm text-gray-500 dark:text-neutral-500"
+                                            >
+                                                {{
+                                                    new Date(
+                                                        project.created_at
+                                                    ).toLocaleDateString(
+                                                        "id-ID",
+                                                        {
+                                                            day: "2-digit",
+                                                            month: "short",
+                                                            hour: "2-digit",
+                                                            minute: "2-digit",
+                                                        }
+                                                    )
+                                                }}
+                                            </span>
                                         </td>
-                                        <td class="size-px whitespace-nowrap">
-                                            <div class="px-6 py-1.5">
-                                                <a
-                                                    class="inline-flex items-center text-sm font-medium text-blue-600 gap-x-1 decoration-2 hover:underline focus:outline-hidden focus:underline dark:text-blue-500"
-                                                    href="#"
-                                                >
-                                                    Edit
-                                                </a>
-                                            </div>
+
+                                        <!-- Aksi -->
+                                        <td
+                                            class="px-6 py-4 text-right whitespace-nowrap"
+                                        >
+                                            <button
+                                                @click="
+                                                    openProjectDetail(project)
+                                                "
+                                                class="inline-flex items-center mx-4 text-sm font-medium text-blue-600 gap-x-1 hover:underline dark:text-blue-400"
+                                            >
+                                                Lihat Detail
+                                            </button>
+                                            <button
+                                                @click="
+                                                    deleteProject(project.id)
+                                                "
+                                                class="inline-flex items-center text-sm font-medium text-red-600 gap-x-1 hover:underline dark:text-blue-400"
+                                            >
+                                                Hapus
+                                            </button>
                                         </td>
                                     </tr>
                                 </tbody>

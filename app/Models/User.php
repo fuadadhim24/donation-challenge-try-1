@@ -51,7 +51,6 @@ class User extends Authenticatable
         return $this->hasOne(UserRole::class);
     }
 
-    // helper untuk cek role
     public function hasRole($role)
     {
         return $this->role && $this->role->role === $role;

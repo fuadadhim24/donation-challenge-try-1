@@ -106,27 +106,13 @@
                 <div
                     class="flex items-center py-1 gap-x-1 lg:gap-x-2 ms-auto lg:ps-6 lg:order-3 lg:col-span-3"
                 >
-                    <button
-                        type="button"
-                        class="size-9.5 relative flex justify-center items-center rounded-xl bg-white border border-gray-200 text-black hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:hover:bg-white/10 dark:text-white dark:hover:text-white dark:focus:text-white"
+                    <a
+                        v-if="!authUser"
+                        href="/register"
+                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-black transition border border-gray-500 gap-x-2 text-nowrap rounded-xl hover:bg-blue-400 focus:outline-hidden focus:bg-blue-600 disabled:opacity-50 disabled:pointer-events-none"
                     >
-                        <span class="sr-only">Search</span>
-                        <svg
-                            class="shrink-0 size-4"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path d="m21 21-4.34-4.34" />
-                            <circle cx="11" cy="11" r="8" />
-                        </svg>
-                    </button>
+                        Daftar Akun
+                    </a>
                     <a
                         v-if="!authUser"
                         href="/login"
@@ -170,10 +156,15 @@
                                 >
                                     Beranda
                                 </a>
-                                <a
+                                <href
                                     href="/logout"
                                     method="post"
                                     as="button"
+                                    :preserve-state="false"
+                                    :preserve-scroll="false"
+                                    @success="
+                                        () => (window.location.href = '/')
+                                    "
                                     class="flex items-center w-full gap-2 px-4 py-2 text-left text-red-500 rounded hover:bg-gray-100"
                                 >
                                     <svg
@@ -190,7 +181,7 @@
                                         <line x1="15" y1="12" x2="3" y2="12" />
                                     </svg>
                                     Keluar
-                                </a>
+                                </href>
                             </div>
                         </div>
                     </div>
@@ -283,10 +274,10 @@
             <div class="relative h-64 md:h-96">
                 <img
                     :src="
-                        project?.image_url ??
+                        project.images[0]?.url ??
                         'https://via.placeholder.com/1920x600'
                     "
-                    :alt="project?.name"
+                    :alt="gambar"
                     class="object-cover w-full h-full"
                 />
                 <div
@@ -299,7 +290,7 @@
                     </h1>
                     <p class="max-w-xl mt-2 text-sm md:text-base">
                         {{
-                            project?.short_description ??
+                            project?.description ??
                             "Tidak ada deskripsi singkat."
                         }}
                     </p>
@@ -523,10 +514,7 @@
             </div>
         </section>
 
-        <section
-            v-for="item in relatedProjects"
-            class="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-24"
-        >
+        <section class="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-24">
             <div class="max-w-2xl mx-auto mb-6 text-center sm:mb-10">
                 <p class="text-sm text-gray-500">Kebaikan mulai dari anda</p>
                 <h1
@@ -541,148 +529,59 @@
                 class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-12"
             >
                 <div
-                    v-for="item in relatedProjects"
-                    :key="item.id"
+                    v-for="project in relatedProjects"
+                    :key="project.id"
                     class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
+                    project
                 >
+                    <!-- Gambar -->
                     <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
                         <img
                             class="object-cover w-full h-full transition group-hover:scale-105"
                             :src="
-                                item.image_url ??
+                                project.images[0]?.url ??
                                 'https://via.placeholder.com/800x600'
                             "
-                            :alt="item.name"
+                            :alt="project.name"
                         />
                     </div>
+
+                    <!-- Konten -->
                     <div class="flex flex-col flex-grow p-4">
                         <h3
                             class="text-lg font-semibold text-gray-900 truncate"
                         >
-                            {{ item.name }}
+                            {{ project.name }}
                         </h3>
+
                         <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            {{ item.description }}
+                            {{ project.description }}
                         </p>
+
+                        <!-- Progress -->
                         <div class="mt-3">
                             <div class="w-full h-2 bg-gray-200 rounded-full">
                                 <div
                                     class="h-2 bg-green-500 rounded-full"
                                     :style="`width: ${
-                                        (item.collection_amount /
-                                            item.target_amount) *
+                                        (project.collection_amount /
+                                            project.target_amount) *
                                         100
                                     }%`"
                                 ></div>
                             </div>
                             <p class="mt-1 text-xs text-gray-600">
                                 Rp
-                                {{
-                                    Number(
-                                        item.collection_amount
-                                    ).toLocaleString("id-ID")
-                                }}
+                                {{ formatCurrency(project.collection_amount) }}
                                 terkumpul dari Rp
-                                {{
-                                    Number(item.target_amount).toLocaleString(
-                                        "id-ID"
-                                    )
-                                }}
+                                {{ formatCurrency(project.target_amount) }}
                             </p>
                         </div>
-                        <div class="pt-4 mt-auto">
-                            <a
-                                :href="`/detail-donasi/${item.id}`"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Card 2 -->
-                <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
-                >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Banjir Jakarta"
-                        />
-                    </div>
-                    <div class="flex flex-col flex-grow p-4">
-                        <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
-                        >
-                            Banjir Jakarta
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Ribuan warga Jakarta terdampak banjir, membutuhkan
-                            makanan, air bersih, dan obat-obatan.
-                        </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 42%"
-                                ></div>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 125.000.000 terkumpul dari Rp 300.000.000
-                            </p>
-                        </div>
                         <!-- Tombol -->
                         <div class="pt-4 mt-auto">
                             <a
-                                href="#"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 3 -->
-                <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
-                >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Kebakaran Kalimantan"
-                        />
-                    </div>
-                    <div class="flex flex-col flex-grow p-4">
-                        <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
-                        >
-                            Kebakaran Hutan Kalimantan
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Asap pekat akibat kebakaran hutan mengancam
-                            kesehatan warga sekitar. Mari bantu mereka.
-                        </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 29%"
-                                ></div>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 220.000.000 terkumpul dari Rp 750.000.000
-                            </p>
-                        </div>
-                        <!-- Tombol -->
-                        <div class="pt-4 mt-auto">
-                            <a
-                                href="#"
+                                :href="`/detail-donasi/${project.id}`"
                                 class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
                             >
                                 Lihat Detail & Donasi
@@ -858,6 +757,13 @@ const relatedProjects = page.props.relatedProjects ?? [];
 const donationMessage = ref("");
 const successPopup = ref(false);
 
+function formatCurrency(amount) {
+    return new Intl.NumberFormat("id-ID", {
+        style: "decimal",
+        minimumFractionDigits: 0,
+    }).format(amount ?? 0);
+}
+
 function handleDonateClick() {
     console.log(authUser);
     console.log(userRole);
@@ -892,7 +798,7 @@ async function submitDonation() {
     }
 
     try {
-        const res = await axios.post("/donate", {
+        const res = await axios.post("/donor/donate", {
             project_id: project.id,
             amount: amountToSend,
             message: "Terima kasih atas bantuannya!", // bisa pakai v-model message

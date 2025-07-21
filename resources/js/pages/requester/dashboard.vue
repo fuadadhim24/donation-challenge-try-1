@@ -46,7 +46,7 @@ function submitProject() {
     });
 
     axios
-        .post("/add-project", formData, {
+        .post("/requester/add-project", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
                 "X-CSRF-TOKEN": document.querySelector(
@@ -67,9 +67,6 @@ const getProgress = (collected, target) => {
     return Math.min(Math.round((collected / target) * 100), 100);
 };
 
-const goDetail = (id) => {
-    Inertia.visit(`/projects/${id}`);
-};
 const getStatusBadge = (status) => {
     switch (status.toLowerCase()) {
         case "approved":
@@ -121,7 +118,7 @@ function deleteProject(id) {
     if (!confirm("Yakin ingin menghapus project ini?")) return;
 
     axios
-        .delete(`/projects/${id}`, {
+        .delete(`/requester/projects/${id}`, {
             headers: {
                 "X-CSRF-TOKEN": document
                     .querySelector('meta[name="csrf-token"]')
@@ -323,6 +320,7 @@ function openProjectDetail(project) {
                     <!-- Dropdown -->
                     <div class="relative inline-flex hs-dropdown">
                         <button
+                            @click="console.log('Clicked dropdown avatar')"
                             id="hs-dropdown-account"
                             type="button"
                             class="inline-flex items-center justify-center border rounded-full size-9"
@@ -561,7 +559,7 @@ function openProjectDetail(project) {
                             ><span class="text-red-600">*</span>Judul</label
                         >
                         <input
-                            v-model="form.title"
+                            v-model="form.name"
                             class="w-full p-2 mt-1 border rounded"
                             type="text"
                             placeholder="contoh: Peduli Bencana Banjir Sulawesi"
@@ -573,7 +571,7 @@ function openProjectDetail(project) {
                             >Deskripsi Singkat</label
                         >
                         <textarea
-                            v-model="form.short_description"
+                            v-model="form.description"
                             class="w-full p-2 mt-1 border rounded"
                         ></textarea>
                     </div>
@@ -1000,7 +998,7 @@ function openProjectDetail(project) {
                                                     :src="`/${cleanImageUrl(
                                                         project.images[0]?.url
                                                     )}`"
-                                                    :alt="project.name"
+                                                    :alt="gambar"
                                                 />
                                                 <div class="flex flex-col">
                                                     <span

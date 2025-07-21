@@ -19,13 +19,8 @@ use App\Models\Project;
 
 Route::get('/', [ProjectController::class, 'index'])->name('home');
 Route::get('/tentang-kami', fn() => Inertia::render('about/index'))->name('about');
-Route::get('/detail-donasi/{project}', [ProjectController::class, 'donate'])->name('detail-donation');
 Route::get('/daftar-donasi',  [ProjectController::class, 'listProject'])->name('list-donation');
-
-Route::post('/donate', [DonationController::class, 'store'])->name('donations.store');
-
-
-Route::get('/test', fn() => Inertia::render('test'))->name('test');
+Route::get('/detail-donasi/{project}', [ProjectController::class, 'donate'])->name('detail-donation');
 Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
 Route::middleware(['auth'])->group(function () {
@@ -39,18 +34,22 @@ Route::middleware(['auth'])->group(function () {
 
 require __DIR__ . '/auth.php';
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'index'])
         ->name('admin.dashboard');
+    Route::delete('/projects/{id}', [AdminController::class, 'destroy']);
+    Route::post('/add-project', [AdminController::class, 'store'])->name('project.store');
+    Route::put('/projects/{project}/status', [ProjectController::class, 'updateStatus']);
 });
 
-Route::middleware(['auth', 'role:donor'])->group(function () {
-    Route::get('/donor/dashboard', [DonorController::class, 'index'])
+Route::middleware(['auth', 'role:donor'])->prefix('donor')->group(function () {
+    Route::get('/dashboard', [DonorController::class, 'index'])
         ->name('donor.dashboard');
+    Route::post('/donate', [DonationController::class, 'store'])->name('donations.store');
 });
 
-Route::middleware(['auth', 'role:requester'])->group(function () {
-    Route::get('/requester/dashboard', [RequesterController::class, 'index'])
+Route::middleware(['auth', 'role:requester'])->prefix('requester')->group(function () {
+    Route::get('/dashboard', [RequesterController::class, 'index'])
         ->name('requester.dashboard');
     Route::post('/add-project', [RequesterController::class, 'store'])->name('project.store');
     Route::delete('/projects/{id}', [ProjectController::class, 'destroy']);
