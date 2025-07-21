@@ -282,24 +282,26 @@
             <!-- Hero Image -->
             <div class="relative h-64 md:h-96">
                 <img
-                    src="https://images.unsplash.com/photo-1606787366850-de6330128bfc?q=80&w=1920&auto=format&fit=crop"
-                    alt="Bantuan Gempa Sulawesi"
+                    :src="
+                        project?.image_url ??
+                        'https://via.placeholder.com/1920x600'
+                    "
+                    :alt="project?.name"
                     class="object-cover w-full h-full"
                 />
-                <!-- Overlay gradient -->
                 <div
                     class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
                 ></div>
 
-                <!-- Title -->
                 <div class="absolute text-white bottom-6 left-6">
                     <h1 class="text-2xl font-bold md:text-4xl">
-                        Bantuan Gempa Sulawesi
+                        {{ project?.name }}
                     </h1>
                     <p class="max-w-xl mt-2 text-sm md:text-base">
-                        Gempa 6.5 SR mengguncang Sulawesi, ribuan keluarga
-                        kehilangan rumah dan mata pencaharian. Mari ulurkan
-                        tangan.
+                        {{
+                            project?.short_description ??
+                            "Tidak ada deskripsi singkat."
+                        }}
                     </p>
                 </div>
             </div>
@@ -314,13 +316,23 @@
                         <div>
                             <p class="text-sm text-gray-600">Terkumpul</p>
                             <p class="text-xl font-semibold text-green-600">
-                                Rp 120.000.000
+                                Rp
+                                {{
+                                    Number(
+                                        project?.collected_amount ?? 0
+                                    ).toLocaleString("id-ID")
+                                }}
                             </p>
                         </div>
                         <div class="text-right">
                             <p class="text-sm text-gray-600">Target</p>
-                            <p class="text-xl font-semibold text-gray-800">
-                                Rp 500.000.000
+                            <p class="text-xl font-semibold text-green-600">
+                                Rp
+                                {{
+                                    Number(
+                                        project?.collected_amount ?? 0
+                                    ).toLocaleString("id-ID")
+                                }}
                             </p>
                         </div>
                     </div>
@@ -329,12 +341,22 @@
                     <div class="w-full h-3 bg-gray-200 rounded-full">
                         <div
                             class="h-3 bg-green-500 rounded-full"
-                            style="width: 24%"
+                            :style="`width: ${
+                                (project?.collection_amount /
+                                    project?.target_amount) *
+                                100
+                            }%`"
                         ></div>
                     </div>
 
                     <p class="mt-2 text-xs text-gray-500">
-                        24% dari target tercapai
+                        {{
+                            Math.round(
+                                (project?.collection_amount /
+                                    project?.target_amount) *
+                                    100
+                            )
+                        }}% dari target tercapai
                     </p>
 
                     <!-- CTA -->
@@ -490,19 +512,19 @@
                 <div class="p-6 bg-white shadow rounded-xl">
                     <h2 class="mb-3 text-lg font-bold">Tentang Program Ini</h2>
                     <p class="leading-relaxed text-gray-700">
-                        Pada tanggal 12 Juli, gempa bumi berkekuatan 6.5 SR
-                        melanda wilayah Sulawesi. Lebih dari
-                        <strong>1.200 keluarga</strong> terpaksa mengungsi
-                        karena kehilangan rumah mereka. Donasi ini akan
-                        digunakan untuk menyediakan makanan, selimut, dan
-                        obat-obatan bagi para korban. Mari bersama-sama membantu
-                        mereka untuk tetap bertahan dan bangkit kembali.
+                        {{
+                            project?.description ??
+                            "Belum ada deskripsi lengkap untuk program ini."
+                        }}
                     </p>
                 </div>
             </div>
         </section>
 
-        <section class="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-24">
+        <section
+            v-for="item in relatedProjects"
+            class="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-24"
+        >
             <div class="max-w-2xl mx-auto mb-6 text-center sm:mb-10">
                 <p class="text-sm text-gray-500">Kebaikan mulai dari anda</p>
                 <h1
@@ -517,41 +539,58 @@
                 class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-12"
             >
                 <div
+                    v-for="item in relatedProjects"
+                    :key="item.id"
                     class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
                 >
                     <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
                         <img
                             class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Gempa Sulawesi"
+                            :src="
+                                item.image_url ??
+                                'https://via.placeholder.com/800x600'
+                            "
+                            :alt="item.name"
                         />
                     </div>
                     <div class="flex flex-col flex-grow p-4">
                         <h3
                             class="text-lg font-semibold text-gray-900 truncate"
                         >
-                            Bantuan Gempa Sulawesi
+                            {{ item.name }}
                         </h3>
                         <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Gempa 6.5 SR melanda Sulawesi, ratusan keluarga
-                            kehilangan rumah dan butuh bantuan darurat.
+                            {{ item.description }}
                         </p>
-                        <!-- Progress -->
                         <div class="mt-3">
                             <div class="w-full h-2 bg-gray-200 rounded-full">
                                 <div
                                     class="h-2 bg-green-500 rounded-full"
-                                    style="width: 18%"
+                                    :style="`width: ${
+                                        (item.collection_amount /
+                                            item.target_amount) *
+                                        100
+                                    }%`"
                                 ></div>
                             </div>
                             <p class="mt-1 text-xs text-gray-600">
-                                Rp 87.520.000 terkumpul dari Rp 500.000.000
+                                Rp
+                                {{
+                                    Number(
+                                        item.collection_amount
+                                    ).toLocaleString("id-ID")
+                                }}
+                                terkumpul dari Rp
+                                {{
+                                    Number(item.target_amount).toLocaleString(
+                                        "id-ID"
+                                    )
+                                }}
                             </p>
                         </div>
-                        <!-- Tombol -->
                         <div class="pt-4 mt-auto">
                             <a
-                                href="#"
+                                :href="`/detail-donasi/${item.id}`"
                                 class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
                             >
                                 Lihat Detail & Donasi
@@ -805,6 +844,8 @@ const showLoginModal = ref(false);
 const showDonateModal = ref(false);
 const authUser = page.props.auth.user ?? null;
 const userRole = authUser ? authUser.role : null;
+const project = page.props.project ?? null;
+const relatedProjects = page.props.relatedProjects ?? [];
 
 function handleDonateClick() {
     console.log(authUser);

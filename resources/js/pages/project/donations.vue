@@ -290,264 +290,58 @@
                 class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-12"
             >
                 <div
+                    v-for="project in projects"
+                    :key="project.id"
                     class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
                 >
+                    <!-- Gambar -->
                     <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
                         <img
                             class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Gempa Sulawesi"
+                            :src="
+                                project.image_url ??
+                                'https://via.placeholder.com/800x600'
+                            "
+                            :alt="project.name"
                         />
                     </div>
-                    <div class="flex flex-col flex-grow p-4">
-                        <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
-                        >
-                            Bantuan Gempa Sulawesi
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Gempa 6.5 SR melanda Sulawesi, ratusan keluarga
-                            kehilangan rumah dan butuh bantuan darurat.
-                        </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 18%"
-                                ></div>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 87.520.000 terkumpul dari Rp 500.000.000
-                            </p>
-                        </div>
-                        <!-- Tombol -->
-                        <div class="pt-4 mt-auto">
-                            <a
-                                href="/detail-donasi"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Card 2 -->
-                <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
-                >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Banjir Jakarta"
-                        />
-                    </div>
+                    <!-- Konten -->
                     <div class="flex flex-col flex-grow p-4">
                         <h3
                             class="text-lg font-semibold text-gray-900 truncate"
                         >
-                            Banjir Jakarta
+                            {{ project.name }}
                         </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Ribuan warga Jakarta terdampak banjir, membutuhkan
-                            makanan, air bersih, dan obat-obatan.
-                        </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 42%"
-                                ></div>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 125.000.000 terkumpul dari Rp 300.000.000
-                            </p>
-                        </div>
-                        <!-- Tombol -->
-                        <div class="pt-4 mt-auto">
-                            <a
-                                href="#"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Card 3 -->
-                <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
-                >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Kebakaran Kalimantan"
-                        />
-                    </div>
-                    <div class="flex flex-col flex-grow p-4">
-                        <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
-                        >
-                            Kebakaran Hutan Kalimantan
-                        </h3>
                         <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Asap pekat akibat kebakaran hutan mengancam
-                            kesehatan warga sekitar. Mari bantu mereka.
+                            {{ project.description }}
                         </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 29%"
-                                ></div>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 220.000.000 terkumpul dari Rp 750.000.000
-                            </p>
-                        </div>
-                        <!-- Tombol -->
-                        <div class="pt-4 mt-auto">
-                            <a
-                                href="#"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
-                >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Gempa Sulawesi"
-                        />
-                    </div>
-                    <div class="flex flex-col flex-grow p-4">
-                        <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
-                        >
-                            Bantuan Gempa Sulawesi
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Gempa 6.5 SR melanda Sulawesi, ratusan keluarga
-                            kehilangan rumah dan butuh bantuan darurat.
-                        </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 18%"
-                                ></div>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 87.520.000 terkumpul dari Rp 500.000.000
-                            </p>
-                        </div>
-                        <!-- Tombol -->
-                        <div class="pt-4 mt-auto">
-                            <a
-                                href="#"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Card 2 -->
-                <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
-                >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Banjir Jakarta"
-                        />
-                    </div>
-                    <div class="flex flex-col flex-grow p-4">
-                        <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
-                        >
-                            Banjir Jakarta
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Ribuan warga Jakarta terdampak banjir, membutuhkan
-                            makanan, air bersih, dan obat-obatan.
-                        </p>
                         <!-- Progress -->
                         <div class="mt-3">
                             <div class="w-full h-2 bg-gray-200 rounded-full">
                                 <div
                                     class="h-2 bg-green-500 rounded-full"
-                                    style="width: 42%"
+                                    :style="`width: ${
+                                        (project.collection_amount /
+                                            project.target_amount) *
+                                        100
+                                    }%`"
                                 ></div>
                             </div>
                             <p class="mt-1 text-xs text-gray-600">
-                                Rp 125.000.000 terkumpul dari Rp 300.000.000
+                                Rp
+                                {{ formatCurrency(project.collected_amount) }}
+                                terkumpul dari Rp
+                                {{ formatCurrency(project.target_amount) }}
                             </p>
                         </div>
-                        <!-- Tombol -->
-                        <div class="pt-4 mt-auto">
-                            <a
-                                href="#"
-                                class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
-                            >
-                                Lihat Detail & Donasi
-                            </a>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Card 3 -->
-                <div
-                    class="flex flex-col transition bg-white shadow group rounded-2xl hover:shadow-lg"
-                >
-                    <div class="aspect-[4/3] overflow-hidden rounded-t-2xl">
-                        <img
-                            class="object-cover w-full h-full transition group-hover:scale-105"
-                            src="https://images.unsplash.com/photo-1508921340878-ba53e1f016ec?q=80&w=800"
-                            alt="Kebakaran Kalimantan"
-                        />
-                    </div>
-                    <div class="flex flex-col flex-grow p-4">
-                        <h3
-                            class="text-lg font-semibold text-gray-900 truncate"
-                        >
-                            Kebakaran Hutan Kalimantan
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-                            Asap pekat akibat kebakaran hutan mengancam
-                            kesehatan warga sekitar. Mari bantu mereka.
-                        </p>
-                        <!-- Progress -->
-                        <div class="mt-3">
-                            <div class="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                    class="h-2 bg-green-500 rounded-full"
-                                    style="width: 29%"
-                                ></div>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-600">
-                                Rp 220.000.000 terkumpul dari Rp 750.000.000
-                            </p>
-                        </div>
                         <!-- Tombol -->
                         <div class="pt-4 mt-auto">
                             <a
-                                href="#"
+                                :href="`/detail-donasi/${project.id}`"
                                 class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition bg-blue-500 rounded-xl hover:bg-blue-600"
                             >
                                 Lihat Detail & Donasi
@@ -556,6 +350,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- End Card Grid -->
 
             <!-- <div class="mt-10 text-center lg:mt-20">
@@ -699,6 +494,7 @@ import { onMounted } from "vue";
 const page = usePage();
 const authUser = page.props.auth.user ?? null;
 const userRole = authUser ? authUser.role : null;
+const projects = page.props.projects ?? [];
 
 function loadScript(src) {
     return new Promise((resolve, reject) => {
@@ -734,6 +530,13 @@ async function initView() {
 }
 
 const { props } = usePage();
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat("id-ID", {
+        style: "decimal",
+        minimumFractionDigits: 0,
+    }).format(amount ?? 0);
+}
 
 onMounted(() => {
     initView();
