@@ -319,7 +319,7 @@
                                 Rp
                                 {{
                                     Number(
-                                        project?.collected_amount ?? 0
+                                        project?.collection_amount ?? 0
                                     ).toLocaleString("id-ID")
                                 }}
                             </p>
@@ -330,7 +330,7 @@
                                 Rp
                                 {{
                                     Number(
-                                        project?.collected_amount ?? 0
+                                        project?.target_amount ?? 0
                                     ).toLocaleString("id-ID")
                                 }}
                             </p>
@@ -456,6 +456,7 @@
                                 >Pesan (opsional)</label
                             >
                             <textarea
+                                v-model="donationMessage"
                                 class="w-full p-2 border rounded"
                                 rows="3"
                                 placeholder="Tulis pesan..."
@@ -500,6 +501,7 @@
                                 </button>
                                 <button
                                     class="px-3 py-2 text-white bg-green-500 rounded"
+                                    @click="submitDonation"
                                 >
                                     Lanjutkan Pembayaran
                                 </button>
@@ -833,11 +835,18 @@
             <!-- End Grid -->
         </div>
     </footer>
+    <div
+        v-if="successPopup"
+        class="fixed p-4 text-white transition bg-green-500 rounded-lg shadow top-5 right-5"
+    >
+        ✅ Pembayaran berhasil, terima kasih telah berdonasi!
+    </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import { Link, usePage } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
+import axios from "axios";
 
 const page = usePage();
 const showLoginModal = ref(false);
@@ -846,6 +855,8 @@ const authUser = page.props.auth.user ?? null;
 const userRole = authUser ? authUser.role : null;
 const project = page.props.project ?? null;
 const relatedProjects = page.props.relatedProjects ?? [];
+const donationMessage = ref("");
+const successPopup = ref(false);
 
 function handleDonateClick() {
     console.log(authUser);
@@ -869,6 +880,36 @@ function toggleAmount(amount) {
     } else {
         selectedAmount.value = amount;
         customAmount.value = "";
+    }
+}
+
+async function submitDonation() {
+    let amountToSend = selectedAmount.value || customAmount.value;
+
+    if (!amountToSend) {
+        alert("Pilih atau masukkan nominal terlebih dahulu!");
+        return;
+    }
+
+    try {
+        const res = await axios.post("/donate", {
+            project_id: project.id,
+            amount: amountToSend,
+            message: "Terima kasih atas bantuannya!", // bisa pakai v-model message
+        });
+
+        if (res.data.success) {
+            showDonateModal.value = false;
+
+            Object.assign(project, res.data.project);
+
+            successPopup.value = true;
+
+            setTimeout(() => (successPopup.value = false), 3000);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan saat memproses donasi");
     }
 }
 </script>

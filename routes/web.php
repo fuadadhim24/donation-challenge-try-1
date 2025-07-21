@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DonorController;
 use App\Http\Controllers\RequesterController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\DonationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Models\Project;
@@ -20,6 +21,9 @@ Route::get('/', [ProjectController::class, 'index'])->name('home');
 Route::get('/tentang-kami', fn() => Inertia::render('about/index'))->name('about');
 Route::get('/detail-donasi/{project}', [ProjectController::class, 'donate'])->name('detail-donation');
 Route::get('/daftar-donasi',  [ProjectController::class, 'listProject'])->name('list-donation');
+
+Route::post('/donate', [DonationController::class, 'store'])->name('donations.store');
+
 
 Route::get('/test', fn() => Inertia::render('test'))->name('test');
 Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
