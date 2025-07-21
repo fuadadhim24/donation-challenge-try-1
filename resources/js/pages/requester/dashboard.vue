@@ -2,8 +2,8 @@
 import { Head } from "@inertiajs/vue3";
 import { ref, onMounted } from "vue";
 import { useScriptTag } from "@vueuse/core";
-import { usePage } from "@inertiajs/vue3";
-import { router } from "@inertiajs/vue3";
+import { usePage, router, useForm } from "@inertiajs/vue3";
+import axios from "axios";
 
 const page = usePage();
 const authUser = page.props.auth.user ?? null;
@@ -19,6 +19,49 @@ defineProps({
     totalCollected: Number,
 });
 
+const showModal = ref(false);
+
+const form = useForm({
+    title: "",
+    short_description: "",
+    target_amount: "",
+    thumbnail: null,
+});
+
+function handleFile(e) {
+    form.images = Array.from(e.target.files);
+}
+
+function submitProject() {
+    let formData = new FormData();
+    formData.append("name", form.name);
+    formData.append("description", form.description);
+    formData.append("target_amount", form.target_amount);
+    formData.append("currency", "IDR");
+    formData.append("status", "need_review");
+
+    // masukkan semua file
+    form.images.forEach((file, i) => {
+        formData.append(`images[${i}]`, file);
+    });
+
+    axios
+        .post("/add-project", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                "X-CSRF-TOKEN": document.querySelector(
+                    'meta[name="csrf-token"]'
+                ).content,
+            },
+        })
+        .then((res) => {
+            console.log("Berhasil buat campaign", res.data);
+            showModal.value = false;
+            form.reset();
+            router.reload();
+        })
+        .catch((err) => console.log(err.response.data));
+}
 const getProgress = (collected, target) => {
     if (!target || target === 0) return 0;
     return Math.min(Math.round((collected / target) * 100), 100);
@@ -66,11 +109,14 @@ function logout() {
     router.post(route("logout"));
 }
 
-const title = "Tailwind CSS Admin Template | Preline UI";
+const title = "Dashboard Requester | Donation Hub";
 onMounted(() => {
     setBodyClass("bg-gray-50", "dark:bg-neutral-900");
     initCharts();
 });
+function cleanImageUrl(url) {
+    return url?.replace("requester/requester", "requester/");
+}
 </script>
 
 <template>
@@ -313,7 +359,6 @@ onMounted(() => {
         </nav>
     </header>
     <!-- ========== END HEADER ========== -->
-
     <!-- ========== MAIN CONTENT ========== -->
     <!-- Breadcrumb -->
     <div
@@ -383,6 +428,84 @@ onMounted(() => {
         </div>
     </div>
     <!-- End Breadcrumb -->
+
+    <div v-if="showModal">
+        <div class="fixed inset-0 bg-black/50 z-[90]" />
+        <div class="fixed inset-0 z-[100] flex items-center justify-center">
+            <div
+                class="relative w-full max-w-lg p-6 bg-white rounded-lg shadow-lg dark:bg-neutral-800"
+            >
+                <h3 class="mb-4 text-lg font-semibold">Buat Campaign Donasi</h3>
+
+                <!-- Form -->
+                <form @submit.prevent="submitProject" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium"
+                            ><span class="text-red-600">*</span>Judul</label
+                        >
+                        <input
+                            v-model="form.title"
+                            class="w-full p-2 mt-1 border rounded"
+                            type="text"
+                            placeholder="contoh: Peduli Bencana Banjir Sulawesi"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium"
+                            >Deskripsi Singkat</label
+                        >
+                        <textarea
+                            v-model="form.short_description"
+                            class="w-full p-2 mt-1 border rounded"
+                        ></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium"
+                            ><span class="text-red-600">*</span>Target
+                            Dana</label
+                        >
+                        <input
+                            v-model="form.target_amount"
+                            class="w-full p-2 mt-1 border rounded"
+                            type="number"
+                            placeholder="contoh: 5000000"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium"
+                            ><span class="text-red-600">*</span>Thumbnail</label
+                        >
+                        <input
+                            class="w-full px-4 py-4 mt-1 text-gray-500 border border-gray-500 rounded-md"
+                            type="file"
+                            @change="handleFile"
+                        />
+                    </div>
+
+                    <!-- Action -->
+                    <div class="flex justify-end mt-4 gap-x-2">
+                        <button
+                            type="button"
+                            @click="showModal = false"
+                            class="px-4 py-2 bg-gray-200 rounded"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="form.processing"
+                            class="px-4 py-2 text-white bg-blue-600 rounded"
+                        >
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Sidebar -->
     <div
@@ -631,7 +754,7 @@ onMounted(() => {
                                     <div class="inline-flex gap-x-2">
                                         <a
                                             class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg gap-x-2 hover:bg-blue-700 focus:outline-hidden focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                                            href="#"
+                                            @click="showModal = true"
                                         >
                                             <svg
                                                 class="shrink-0 size-4"
@@ -669,11 +792,21 @@ onMounted(() => {
                                             <span
                                                 class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
                                             >
-                                                Project
+                                                Gambar
                                             </span>
                                         </th>
 
                                         <!-- Target & Terkumpul -->
+                                        <th
+                                            scope="col"
+                                            class="px-6 py-4 text-left"
+                                        >
+                                            <span
+                                                class="text-xs font-semibold text-gray-800 uppercase dark:text-neutral-200"
+                                            >
+                                                Nama Project
+                                            </span>
+                                        </th>
                                         <th
                                             scope="col"
                                             class="px-6 py-4 text-left"
@@ -747,12 +880,37 @@ onMounted(() => {
                                             >
                                                 <img
                                                     class="inline-block object-cover w-12 h-12 rounded-lg"
-                                                    :src="
-                                                        project.thumbnail_url ||
-                                                        'https://via.placeholder.com/80x80'
-                                                    "
-                                                    :alt="project.title"
+                                                    :src="`/${cleanImageUrl(
+                                                        project.images[0]?.url
+                                                    )}`"
+                                                    :alt="project.name"
                                                 />
+                                                <div class="flex flex-col">
+                                                    <span
+                                                        class="text-sm font-semibold text-gray-800 dark:text-neutral-200"
+                                                    >
+                                                        {{ project.title }}
+                                                    </span>
+                                                    <span
+                                                        class="text-xs text-gray-500 dark:text-neutral-500"
+                                                    >
+                                                        {{
+                                                            project.short_description?.slice(
+                                                                0,
+                                                                30
+                                                            )
+                                                        }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td
+                                            class="py-4 ps-6 pe-4 whitespace-nowrap"
+                                        >
+                                            <div
+                                                class="flex items-center gap-x-3"
+                                            >
+                                                <p>{{ project.name }}</p>
                                                 <div class="flex flex-col">
                                                     <span
                                                         class="text-sm font-semibold text-gray-800 dark:text-neutral-200"
