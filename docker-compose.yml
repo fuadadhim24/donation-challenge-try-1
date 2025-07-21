@@ -6,6 +6,7 @@ services:
         container_name: donation-app
         volumes:
             - .:/var/www
+            - ./vendor:/var/www/vendor
         depends_on:
             - mysql
         ports:

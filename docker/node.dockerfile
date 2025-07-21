@@ -7,4 +7,6 @@ RUN npm install
 
 COPY . .
 
+ENV PATH="/app/node_modules/.bin:$PATH"
+
 CMD ["npm", "run", "dev"]
