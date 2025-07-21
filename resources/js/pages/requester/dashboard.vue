@@ -395,7 +395,7 @@ function openProjectDetail(project) {
         <!-- Modal Content -->
         <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div
-                class="relative w-full max-w-xl bg-white rounded-2xl shadow-xl overflow-hidden dark:bg-neutral-800"
+                class="relative w-full max-w-xl overflow-hidden bg-white shadow-xl rounded-2xl dark:bg-neutral-800"
             >
                 <!-- Gambar -->
                 <div class="overflow-hidden max-h-[250px]">
@@ -448,7 +448,7 @@ function openProjectDetail(project) {
                     </div>
 
                     <!-- Info Lain -->
-                    <div class="text-sm text-gray-700 space-y-1">
+                    <div class="space-y-1 text-sm text-gray-700">
                         <p>
                             <strong>Status:</strong>
                             {{ selectedProject.status }}
@@ -700,7 +700,7 @@ function openProjectDetail(project) {
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6">
                 <!-- Card -->
                 <div
-                    class="flex flex-col bg-white border shadow-2xs rounded-xl dark:bg-neutral-800"
+                    class="flex flex-col bg-white border border-gray-200 shadow-2xs rounded-xl dark:bg-neutral-800"
                 >
                     <div class="p-4 md:p-5">
                         <p
