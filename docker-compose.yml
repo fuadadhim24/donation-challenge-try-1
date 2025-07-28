@@ -38,14 +38,13 @@ services:
         environment:
             MYSQL_ROOT_PASSWORD: root
             MYSQL_DATABASE: donation_hub
-            MYSQL_USER: root
-            MYSQL_PASSWORD: root
 
     ####################################################################################################
     # phpMyAdmin
     ####################################################################################################
     phpmyadmin:
         image: phpmyadmin/phpmyadmin
+        platform: linux/amd64
         ports:
             - 8080:80
         links:
