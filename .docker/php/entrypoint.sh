@@ -17,7 +17,7 @@ if [ -f /var/www/artisan ]; then
     php artisan config:clear
     php artisan key:generate --force
     php artisan config:cache
-    php artisan migrate --force
+    php artisan migrate:fresh --force
     php artisan db:seed --class=DatabaseSeeder --force
 
 fi
