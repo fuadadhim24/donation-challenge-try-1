@@ -57,8 +57,7 @@ Ini akan otomatis:
 
 ## Akses Aplikasi
 
--   Laravel backend: [http://localhost:8000](http://localhost:8000)
--   Vite dev server: [http://localhost:5173](http://localhost:5173)
+-   Laravel backend: [http://localhost:8000](http://localhost)
 -   phpMyAdmin: [http://localhost:8080](http://localhost:8080)
 -   Adminer: [http://localhost:9090](http://localhost:9090)
 -   Mailpit: [http://localhost:8025](http://localhost:8025)
